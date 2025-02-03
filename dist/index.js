@@ -37,8 +37,8 @@ const tslib_1 = require("tslib");
 // Add color to console messages.
 require("colors");
 // Support .env args
-const dotenv_1 = require("dotenv");
-(0, dotenv_1.config)();
+const dotenv = tslib_1.__importStar(require("dotenv"));
+dotenv.config();
 // Load discord client
 const os_1 = tslib_1.__importDefault(require("os"));
 const error_1 = tslib_1.__importDefault(require("./src/utils/error"));
@@ -84,12 +84,13 @@ const main = async () => {
                         .toLocaleString()} MB | ${(((os_1.default.totalmem() - os_1.default.freemem()) / os_1.default.totalmem()) * 100)
                         .toFixed(2)}%`.cyan);
                 // Upload commands to the button menu.
-                await client.telegram.setMyCommands(client.commands.map(a => {
+                const commands = client.commands.map(a => {
                     return {
-                        command: a.data.name,
-                        description: a.data.description
+                        command: a.data.name.slice(0, 31),
+                        description: a.data.description.slice(0, 255)
                     };
-                }));
+                });
+                await client.telegram.setMyCommands(commands);
             })
                 .catch(e => {
                 (0, post_1.default)("Something when bot is loading went wrong!", "E", "red", "red");

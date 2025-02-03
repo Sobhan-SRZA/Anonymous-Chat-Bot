@@ -5,12 +5,13 @@ const tslib_1 = require("tslib");
 const error_1 = tslib_1.__importDefault(require("./error"));
 const Collection_1 = require("../classes/Collection");
 const escapeMarkdown_1 = tslib_1.__importDefault(require("../functions/escapeMarkdown"));
-async function checkCmdCooldown(client, message, command) {
+const __1 = tslib_1.__importDefault(require("../.."));
+async function checkCmdCooldown(message, command) {
     try {
         const userId = message.from.id;
-        if (!client.cooldowns.has(command.data.name))
-            client.cooldowns.set(command.data.name, new Collection_1.Collection());
-        const timestamps = client.cooldowns.get(command.data.name), cooldownDuration = (command.cooldown ?? 3), cooldownAmount = cooldownDuration * 1000;
+        if (!__1.default.cooldowns.has(command.data.name))
+            __1.default.cooldowns.set(command.data.name, new Collection_1.Collection());
+        const timestamps = __1.default.cooldowns.get(command.data.name), cooldownDuration = (command.cooldown ?? 3), cooldownAmount = cooldownDuration * 1000;
         if (timestamps.has(userId)) {
             const expirationTime = timestamps.get(userId) + cooldownAmount;
             if (Date.now() < expirationTime) {

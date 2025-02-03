@@ -11,8 +11,7 @@ exports.default = async (client) => {
         for (const file of events) {
             const eventModule = await Promise.resolve(`${`${path}/${dirs}/${file}`}`).then(s => tslib_1.__importStar(require(s)));
             const event = eventModule.default || eventModule;
-            const eventName = file.split(".")[0];
-            client.on(eventName, event.bind(null, client));
+            client.on(event.name, event.run.bind(null, client));
             amount++;
         }
         ;

@@ -2,26 +2,26 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const fs_1 = require("fs");
-const __1 = tslib_1.__importDefault(require("../../.."));
 const error_1 = tslib_1.__importDefault(require("../../utils/error"));
 const firstUpperCase_1 = tslib_1.__importDefault(require("../../functions/firstUpperCase"));
-const escapeMarkdown_1 = tslib_1.__importDefault(require("../../functions/escapeMarkdown"));
+const markdownToHtml_1 = tslib_1.__importDefault(require("../../functions/markdownToHtml"));
 const command = {
     data: {
         name: "help",
         description: "لیست دستورات بات."
     },
     category: "misc",
-    cooldown: 10,
-    only_owner: false,
-    run: async (ctx) => {
+    cooldown: 2,
+    run: async (client, ctx) => {
         try {
             let commandList = "";
             const categories = (0, fs_1.readdirSync)(`${process.cwd()}/dist/src/commands`), botDescription = "";
             categories.forEach(async (dir) => {
-                commandList += `**${(0, firstUpperCase_1.default)(dir)}**\n${__1.default.cmds_info_list_str(dir.toLowerCase())}\n`;
+                commandList += `**${(0, firstUpperCase_1.default)(dir)}**\n${client.cmds_info_list_str(dir.toLowerCase())}\n`;
             });
-            return await ctx.replyWithMarkdownV2((0, escapeMarkdown_1.default)(`${botDescription}**لیست دستورات ربات:**\n${commandList}`));
+            return await ctx.reply((0, markdownToHtml_1.default)(`${botDescription}**لیست دستورات ربات:**\n${commandList}`), {
+                parse_mode: "HTML"
+            });
         }
         catch (e) {
             (0, error_1.default)(e);
