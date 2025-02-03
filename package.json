@@ -1,0 +1,26 @@
+{
+  "name": "anonymous-chat-bot",
+  "version": "0.0.0",
+  "author": "Sobhan-SRZA (mr.sinre) & Persian Caesar",
+  "description": "A Telegram bot for anonymous chatting with referral system and profile-based random chat.",
+  "main": "dist/index.js",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.2.4",
+    "tslib": "^2.8.1",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "colors": "^1.4.0",
+    "dotenv": "^16.4.7",
+    "quick.db": "^9.1.7",
+    "telegraf": "^4.16.3",
+    "write-file-atomic": "^6.0.0"
+  }
+}

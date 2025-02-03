@@ -1,0 +1,7 @@
+node_modules
+dist
+package-lock.json
+quickdb.json
+.env
+*.zip
+*.rar
