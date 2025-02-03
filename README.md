@@ -105,13 +105,18 @@ node dist/index.js
 
 ## Packages & Versions 📦
 
-| Package    | Version | Description                                                            | Emoji |
-| ---------- | ------- | ---------------------------------------------------------------------- | ----- |
-| telegraf   | ^4.12.2 | Telegram bot framework for interacting with the Telegram Bot API.      | 🤖     |
-| dotenv     | ^16.0.3 | Loads environment variables from a `.env` file.                        | 🌱     |
-| quick.db   | ^9.1.2  | A simple SQLite-based database using JsonDriver for storing bot data.  | 🗄️     |
-| typescript | ^4.8.4  | Superset of JavaScript for static type checking (dev dependency).      | 💻     |
-| ts-node    | ^10.9.1 | Runs TypeScript files directly without pre-compiling (dev dependency). | ⚡     |
+| Package              | Version    | Description                                                                                               | Emoji    |
+|----------------------|------------|-----------------------------------------------------------------------------------------------------------|----------|
+| **telegraf**         | ^4.16.3   | Telegram bot framework for interacting with the Telegram Bot API.                                         | 🤖       |
+| **dotenv**           | ^16.4.7   | Loads environment variables from a `.env` file.                                                           | 🌱       |
+| **quick.db**         | ^9.1.7    | A simple SQLite-based database using JsonDriver for storing bot data.                                     | 🗄️       |
+| **colors**           | ^1.4.0    | Adds color support to console messages, making debugging output more visually appealing.                  | 🎨       |
+| **write-file-atomic**| ^6.0.0    | Provides atomic writing to a file to ensure data integrity during writes.                                 | 💾       |
+| **@types/node**      | ^22.5.0   | TypeScript definitions for Node.js, providing type checking and IntelliSense for Node.js APIs.              | 📚       |
+| **ts-node**          | ^10.9.2   | Runs TypeScript files directly without needing to compile them first.                                     | ⚡       |
+| **tsup**             | ^8.2.4    | A bundler for TypeScript projects that provides fast and simple builds.                                   | 📦       |
+| **tslib**            | ^2.8.1    | Contains runtime helpers for TypeScript to reduce output size.                                            | 🔧       |
+| **typescript**       | ^5.5.4    | A superset of JavaScript that compiles to plain JavaScript and provides static type checking.               | 💻       |
 
 ---
 

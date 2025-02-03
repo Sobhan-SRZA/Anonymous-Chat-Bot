@@ -9,12 +9,24 @@ class TelegramClient extends telegraf_1.Telegraf {
     cooldowns;
     config;
     db;
+    anonQueue;
+    activeChats;
+    referralWaiting;
+    randomQueues;
     constructor(token, options) {
         super(token || config_1.default.bot.token, options);
         this.config = config_1.default;
         this.commands = new Collection_1.Collection();
         this.cooldowns = new Collection_1.Collection();
         this.db = null;
+        this.anonQueue = [];
+        this.activeChats = new Collection_1.Collection();
+        this.referralWaiting = new Set();
+        this.randomQueues = {
+            male: [],
+            female: [],
+            other: []
+        };
     }
     cmds_info_list_str(category_name) {
         let description = "";
