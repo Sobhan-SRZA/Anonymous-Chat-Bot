@@ -19,7 +19,7 @@ const command: CommandType = {
 
       await cleanupUser(client, userId);
       const args = ctx.text!.split(" ");
-      if (args.length > 1) {
+      if (args.length > 0) {
         const param = args[0];
         if (!param)
           return;
