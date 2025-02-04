@@ -15,7 +15,7 @@ const command = {
     run: async (client, ctx) => {
         try {
             let commandList = "";
-            const categories = (0, fs_1.readdirSync)(`${process.cwd()}/dist/src/commands`), botDescription = "این ربات برای چت خصوصی طراحی شده و شما میتوانید با استفاده از این ربات به صورت ناشناس با بقیه چت کنید بدون لو رفتن هیچ اطلاعاتی از جانب ربات.\n```\nاین ربات چی اطلاعاتی رو ذخیره نمیکند و اطلاعات خصوصی شما بدون خطر لو رفتن فقط توسط شما قابل دسترس میباشد.\n```";
+            const categories = (0, fs_1.readdirSync)(`${process.cwd()}/dist/src/commands`), botDescription = "این ربات برای چت خصوصی طراحی شده و شما میتوانید با استفاده از این ربات به صورت ناشناس با بقیه چت کنید بدون لو رفتن هیچ اطلاعاتی از جانب ربات.\n```\nاین ربات چی اطلاعاتی رو ذخیره نمیکند و اطلاعات خصوصی شما بدون خطر لو رفتن فقط توسط شما قابل دسترس میباشد.\n```\n";
             categories.forEach(async (dir) => {
                 commandList += `**${(0, firstUpperCase_1.default)(dir)}**\n${client.cmds_info_list_str(dir.toLowerCase())}\n`;
             });
