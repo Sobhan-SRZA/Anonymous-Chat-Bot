@@ -95,8 +95,8 @@ node dist/index.js
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | `/start`            | Starts the bot. Without parameters, it shows usage instructions. With a referral parameter (`ref-<referralCode>`), it connects you with a partner. | 🚀     |
 | `/setprofile`       | Opens an inline menu to let you set your profile (e.g., choose your gender).                                                                       | 👤     |
-| `/myprofile`        | Displays your profile and your unique referral link (e.g., `https://t.me/<botUsername>?start=ref-<referralCode>`).                                 | 📄     |
-| `/activateReferral` | Puts you in a waiting state to accept incoming connections via your referral link.                                                                 | 🔗     |
+| `/myprofile`        | Displays your profile and your unique referral link (e.g., `https://t.me/<botUsername>?start=<referralCode>`).                                 | 📄     |
+| `/activate_referral` | Puts you in a waiting state to accept incoming connections via your referral link.                                                                 | 🔗     |
 | `/anon`             | Joins the general queue for a random anonymous chat (without any profile filtering).                                                               | 💬     |
 | `/random`           | Joins the queue for a random chat filtered by profile (e.g., gender). Optionally, you can pass a parameter (e.g., `/random male`).                 | 🎲     |
 | `/stop`             | Stops the current chat session and removes you from any waiting queues.                                                                            | ✋     |
