@@ -10,6 +10,7 @@ const command: CommandType = {
   },
   category: "chats",
   cooldown: 5,
+  only_privet: true,
   run: async (client, ctx, args) => {
     try {
       const
