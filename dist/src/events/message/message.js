@@ -29,6 +29,9 @@ const event = {
                 // Filter Only Valid Commands
                 if (!command && message.chat.type === "private")
                     return await message.sendMessage("⚠دستور تعریف نشده!");
+                // Filter Privet Commands
+                if (command.only_privet && message.chat.type !== "private")
+                    return;
                 // Filter Group Commands
                 if (command.only_group && await (0, checkMember_1.default)(message))
                     return;

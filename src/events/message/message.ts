@@ -44,6 +44,10 @@ const event: EventType = {
         if (!command && message.chat.type === "private")
           return await message.sendMessage("⚠دستور تعریف نشده!");
 
+        // Filter Privet Commands
+        if (command.only_privet && message.chat.type !== "private")
+          return;
+
         // Filter Group Commands
         if (command.only_group && await checkMember(message))
           return;

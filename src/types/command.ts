@@ -17,6 +17,7 @@ export default interface CommandType {
     only_owner?: boolean;
     only_group?: boolean;
     only_admins?: boolean;
+    only_privet?: boolean;
     run: (client: TelegramClient, ctx: NarrowedContext<MyContext, Update.MessageUpdate<Message>>, args: string[]) => void;
 }
 
