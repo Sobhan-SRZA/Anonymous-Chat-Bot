@@ -1,8 +1,26 @@
-import { Scenes } from "telegraf";
+import { Context } from "telegraf";
 import { MaybeInaccessibleMessage, User } from "telegraf/typings/core/types/typegram";
 
+// Custom session
+interface MySession {
+    lastMessage?: {
+        text: string | undefined;
+        chat: {
+            id: number;
+            type: "private" | "group" | "supergroup" | "channel";
+        };
+        from: {
+            id: number;
+            username: string | undefined
+        };
+        message_id: number | undefined;
+    };
+}
+
 // Custom telegraf context
-type MyContext = Scenes.WizardContext;
+interface MyContext extends Context {
+    session: MySession;
+}
 
 // Rewrite the type by myself
 interface CtxCallbackQuery {

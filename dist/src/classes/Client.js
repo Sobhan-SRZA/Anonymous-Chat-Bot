@@ -19,6 +19,15 @@ class TelegramClient extends telegraf_1.Telegraf {
         this.commands = new Collection_1.Collection();
         this.cooldowns = new Collection_1.Collection();
         this.db = null;
+        // Add session
+        this.use((0, telegraf_1.session)());
+        this.use((ctx, next) => {
+            if (ctx.session === undefined) {
+                ctx.session = {};
+            }
+            return next();
+        });
+        // Anon chat variuables  
         this.anonQueue = [];
         this.activeChats = new Collection_1.Collection();
         this.referralWaiting = new Set();
@@ -41,11 +50,10 @@ class TelegramClient extends telegraf_1.Telegraf {
 exports.default = TelegramClient;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */ 
 //# sourceMappingURL=Client.js.map

@@ -1,7 +1,12 @@
-import CommandType from "../../types/command";
-import cleanupUser from "../../utils/cleanupUser";
 import error from "../../utils/error";
+import CommandType from "../../types/command";
+import getUserProfile from "../../utils/getUserProfile";
+import markdownToHtml from "../../functions/markdownToHtml";
+import setUserProfile from "../../utils/setUserProfile";
 import getUserIdByReferralCode from "../../utils/getUserIdByReferralCode";
+import { Message } from "telegraf/typings/core/types/typegram";
+import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
+import { startMessageButtons } from "../../utils/startMessage";
 
 const command: CommandType = {
   data: {
@@ -11,63 +16,67 @@ const command: CommandType = {
   category: "chats",
   cooldown: 5,
   only_privet: true,
-  run: async (client, ctx) => {
+  run: async (client, ctx, args) => {
     try {
-      const userId = ctx.from?.id;
-      if (!userId)
-        return;
+      const
+        db = client.db!,
+        userProfile = await getUserProfile(db, ctx.from.id);
 
-      await cleanupUser(client, userId);
-      const args = ctx.text!.split(" ");
-      if (args.length > 0) {
-        const param = args[0];
-        if (!param)
-          return;
+      if (args[0]) {
+        const referrerId = await getUserIdByReferralCode(db, args[0]);
+        if (!referrerId)
+          return await ctx.reply(
+            markdownToHtml("ارتباط بر قرار نشد 😕\nبنظر میرسه کد اشتباه وارد شده و یا اینکه منقضی شده پس بهتره از یه کد جدید استفاده بکنی."),
+            { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
+          )
 
-        const
-          db = client.db!,
-          referrerId = await getUserIdByReferralCode(db, param);
+        if (referrerId.toString() === ctx.from.id.toString())
+          return await ctx.reply(
+            markdownToHtml("حالت خوبه؟ اگه بخوای شماره روانشناسم رو بهت بدم باهاش حرف بزن شاید کمک کرد!\nدرک میکنم بعضی وقتا با خودمون حرف میزنیم ولی من نمیتونم در این مورد بهت کمک کنم 😶"),
+            { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
+          )
 
-        if (referrerId === null)
-          return await ctx.reply('لینک referral معتبر نیست.');
 
-        if (referrerId === userId)
-          return await ctx.reply('شما نمی‌توانید از لینک خودتان استفاده کنید.');
-
-        if (client.referralWaiting.has(referrerId)) {
-          client.activeChats.set(userId, referrerId);
-          client.activeChats.set(referrerId, userId);
-          client.referralWaiting.delete(referrerId);
-          await ctx.reply("شما با کاربری ناشناس جفت شدید!");
-          try {
-            return await client.telegram.sendMessage(
-              referrerId,
-              "شما با یک کاربر ناشناس از طریق لینک جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید."
-            );
-          } catch (err) {
-            await ctx.reply("متاسفانه پیام به کاربر مقابل ارسال نشد.");
-            return await cleanupUser(client, userId);
-          }
-        }
-
-        else
-          return await ctx.reply("لینک منقضی شده یا کاربر مرجع در حالت انتظار نیست.");
-
+        return await ctx.reply(
+          "شما یک ورودی وارد کردید",
+          { reply_parameters: { message_id: ctx.msgId } }
+        )
       }
 
-      return await ctx.reply("برای شروع چت ناشناس از دستور /anon یا /random استفاده کنید.");
+      let message: Message.TextMessage | null = null;
+      if (!userProfile) {
+        message = await ctx.reply(
+          markdownToHtml(`سلام **${ctx.from.first_name}**!👋🏻\nبه ربات چت خصوصی خوش اومدی💋`),
+          { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
+        );
+        await setUserProfile(db, ctx.from.id, {});
+      }
+
+      const replyData: ExtraReplyMessage = {
+        reply_markup: startMessageButtons
+      };
+
+      if (!message || !message.text)
+        replyData.reply_parameters = {
+          message_id: ctx.msgId!
+        };
+
+      return await ctx.reply(
+        "چه کاری برات انجام بدم؟",
+        replyData
+      );
     } catch (e: any) {
       error(e)
     }
   }
 };
+
 export default command;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

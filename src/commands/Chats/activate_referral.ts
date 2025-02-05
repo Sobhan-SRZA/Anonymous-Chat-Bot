@@ -11,24 +11,27 @@ const command: CommandType = {
   only_privet: true,
   run: async (client, ctx) => {
     try {
-      const userId = ctx.from?.id;
+      const userId = ctx.from!.id;
       if (!userId)
         return;
 
       client.referralWaiting.add(userId);
-      return await ctx.reply("حالت انتظار برای چت از طریق لینک فعال شد. اکنون کاربران دیگر با استفاده از لینک شما می‌توانند وارد چت شوند.");
+      return await ctx.reply(
+        "حالت انتظار برای چت از طریق لینک فعال شد. اکنون کاربران دیگر با استفاده از لینک شما می‌توانند وارد چت شوند.",
+        { reply_parameters: { message_id: ctx.msgId } }
+      );
     } catch (e: any) {
       error(e)
     }
   }
 };
+
 export default command;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

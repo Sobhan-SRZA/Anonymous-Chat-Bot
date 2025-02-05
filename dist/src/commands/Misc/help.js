@@ -20,7 +20,8 @@ const command = {
                 commandList += `**${(0, firstUpperCase_1.default)(dir)}**\n${client.cmds_info_list_str(dir.toLowerCase())}\n`;
             });
             return await ctx.reply((0, markdownToHtml_1.default)(`${botDescription}**لیست دستورات ربات:**\n${commandList}`), {
-                parse_mode: "HTML"
+                parse_mode: "HTML",
+                reply_parameters: { message_id: ctx.msgId }
             });
         }
         catch (e) {
@@ -31,11 +32,10 @@ const command = {
 exports.default = command;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */ 
 //# sourceMappingURL=help.js.map

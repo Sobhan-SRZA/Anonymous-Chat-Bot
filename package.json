@@ -1,6 +1,6 @@
 {
   "name": "anonymous-chat-bot",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "Sobhan-SRZA (mr.sinre) & Persian Caesar",
   "description": "A Telegram bot for anonymous chatting with referral system and profile-based random chat.",
   "main": "dist/index.js",

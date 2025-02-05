@@ -1,7 +1,7 @@
 import CommandType, { Categories } from "../types/command";
 import config from "../../config";
 import { QuickDB } from "quick.db";
-import { Telegraf } from "telegraf";
+import { session, Telegraf } from "telegraf";
 import { Collection } from "./Collection";
 import { MyContext } from "../types/MessageContext";
 
@@ -21,6 +21,17 @@ export default class TelegramClient extends Telegraf<MyContext> {
         this.commands = new Collection();
         this.cooldowns = new Collection();
         this.db = null;
+
+        // Add session
+        this.use(session());
+        this.use((ctx, next) => {
+            if (ctx.session === undefined) {
+                ctx.session = {};
+            }
+            return next();
+        });
+
+        // Anon chat variuables  
         this.anonQueue = [];
         this.activeChats = new Collection();
         this.referralWaiting = new Set();
@@ -44,10 +55,9 @@ export default class TelegramClient extends Telegraf<MyContext> {
 }
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */
