@@ -6,7 +6,7 @@ export default async function generateReferralLink(bot: TelegramClient, userId: 
     botUsername = bot.botInfo!.username,
     referralCode = await getOrCreateReferralCode(bot.db!, userId);
 
-  return `https://t.me/${botUsername}?start=${referralCode}`;
+  return `https://t.me/${encodeURIComponent(botUsername)}?start=${encodeURIComponent(referralCode)}`;
 }
 /**
  * @copyright

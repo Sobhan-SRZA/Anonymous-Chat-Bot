@@ -3,15 +3,15 @@ import { InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 const startMessageButtons: InlineKeyboardMarkup | undefined = {
   inline_keyboard: [
     [
-      { text: "چت با ناشناس 📞", callback_data: "anon_chat" },
+      { text: "چت با ناشناس 📞", callback_data: "anonymous_chat" },
       { text: "لینک ناشناس من 🔗", callback_data: "my_referral_link" }
     ],
     [
       { text: "لینک یاب 🔍", callback_data: "found_user_by_link" },
-      { text: "چت با مخاطب خاص 💌", callback_data: "chat_with_spicial" }
+      { text: "چت با مخاطب خاص 💌", callback_data: "chat_with_spicial_user" }
     ],
     [
-      { text: "ارتباط با پشتیبانی ⚒", callback_data: "contact_support" },
+      { text: "ارتباط با پشتیبانی ⚒", url: "https://t.me/Sobhan_SRZA" },
       { text: "راهنما 💡", callback_data: "faq" }
     ],
     [

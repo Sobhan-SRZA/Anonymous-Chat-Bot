@@ -13,7 +13,7 @@ const command: CommandType = {
     name: "start",
     description: "شروع چت."
   },
-  category: "chats",
+  category: "misc",
   cooldown: 5,
   only_privet: true,
   run: async (client, ctx, args) => {

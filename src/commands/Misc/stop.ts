@@ -7,7 +7,7 @@ const command: CommandType = {
     name: "stop",
     description: "قطع کردن چت فعلی و پاکسازی کاربر از صف‌های انتظار."
   },
-  category: "chats",
+  category: "misc",
   cooldown: 5,
   only_privet: true,
   run: async (client, ctx) => {

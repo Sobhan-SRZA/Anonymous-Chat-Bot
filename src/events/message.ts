@@ -11,6 +11,7 @@ import { Message, Update } from "telegraf/typings/core/types/typegram";
 import setUserProfile from "../utils/setUserProfile";
 import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
+import updateUserLastSeen from "../utils/updateUserLastSeen";
 
 const event: EventType = {
   name: "message",
@@ -18,15 +19,20 @@ const event: EventType = {
     try {
       const
         db = client.db!,
-        userId = message.from!.id;
+        userId = message.from!.id,
+        lastMessage = message.session.lastMessage;
 
-      // Last Messages
-      const lastMessage = message.session.lastMessage;
+      // Change nickname
       if (lastMessage && lastMessage.text && lastMessage.chat.id === message.chat.id) {
+        
+        // Set last activity
+        await updateUserLastSeen(db, userId);
+        
         const profile = await getUserProfile(db, userId) || {};
         if (lastMessage.text.includes("برای تغییر نام نمایشی، نام را ارسال کنید.")) {
           profile.nickname = message.text;
-          await setUserProfile(db, userId, profile)
+          await setUserProfile(db, userId, profile);
+          message.session = {};
           return await client.telegram.editMessageText(
             lastMessage.chat.id, lastMessage.message_id, message.inlineMessageId,
             markdownToHtml(`نام نمایشی شما با موفقیت تغییر یافت✔\nنام نمایشی شما:\`\`\`\n${profile.nickname}\n\`\`\``),
@@ -34,18 +40,23 @@ const event: EventType = {
               parse_mode: "HTML",
               reply_markup: {
                 inline_keyboard: [
-                  [
-                    { text: "بازگشت ↩", callback_data: "setting" }
-                  ]
+                  [{ text: "حذف 🗑", callback_data: "delete_nickname" }],
+                  [{ text: "بازگشت ↩", callback_data: "setting" }]
                 ]
               }
             }
           )
         }
 
+        // Change welcome message
         if (lastMessage.text.includes("تغییر پیغام خوش آمد گویی")) {
+        
+          // Set last activity
+          await updateUserLastSeen(db, userId);
+
           profile.welcome_message = message.text;
           await setUserProfile(db, userId, profile)
+          message.session = {};
           return await client.telegram.editMessageText(
             lastMessage.chat.id, lastMessage.message_id, message.inlineMessageId,
             markdownToHtml(`پیغام خوش آمد گویی شما با موفقیت تغییر یافت✔\پیغام خوش آمد گویی شما:\`\`\`\n${profile.welcome_message}\n\`\`\``),
@@ -53,9 +64,8 @@ const event: EventType = {
               parse_mode: "HTML",
               reply_markup: {
                 inline_keyboard: [
-                  [
-                    { text: "بازگشت ↩", callback_data: "setting" }
-                  ]
+                  [{ text: "حذف 🗑", callback_data: "delete_welcome_message" }],
+                  [{ text: "بازگشت ↩", callback_data: "setting" }]
                 ]
               }
             }
@@ -70,6 +80,10 @@ const event: EventType = {
 
       // Filter Commands
       if (message.text && message.text.startsWith("/")) {
+        
+        // Set last activity
+        await updateUserLastSeen(db, userId);
+
         const
           args = message.text.slice(1).trim().split(/ +/g),
           mention = `@${client.botInfo?.username}`;
