@@ -1,9 +1,9 @@
-import CommandType, { Categories } from "../types/command";
-import config from "../../config";
-import { QuickDB } from "quick.db";
 import { session, Telegraf } from "telegraf";
 import { Collection } from "./Collection";
 import { MyContext } from "../types/MessageContext";
+import { QuickDB } from "quick.db";
+import CommandType, { Categories } from "../types/command";
+import config from "../../config";
 
 export default class TelegramClient extends Telegraf<MyContext> {
     commands: Collection<string, CommandType>;

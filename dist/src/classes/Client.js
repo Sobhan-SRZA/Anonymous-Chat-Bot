@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
-const config_1 = tslib_1.__importDefault(require("../../config"));
 const telegraf_1 = require("telegraf");
 const Collection_1 = require("./Collection");
+const config_1 = tslib_1.__importDefault(require("../../config"));
 class TelegramClient extends telegraf_1.Telegraf {
     commands;
     cooldowns;

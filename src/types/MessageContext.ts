@@ -1,5 +1,5 @@
-import { Context } from "telegraf";
 import { MaybeInaccessibleMessage, User } from "telegraf/typings/core/types/typegram";
+import { Context } from "telegraf";
 
 // Custom session
 interface MySession {

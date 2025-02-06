@@ -1,6 +1,5 @@
 import CommandType from "../../types/command";
 import error from "../../utils/error";
-import { Markup } from "telegraf";
 
 const command: CommandType = {
   data: {

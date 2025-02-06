@@ -1,6 +1,6 @@
 import { readdirSync } from "fs";
-import post from "../functions/post";
 import TelegramClient from "../classes/Client";
+import post from "../functions/post";
 
 export default async (client: TelegramClient) => {
   let amount: number = 0;

@@ -1,8 +1,8 @@
 import { QuickDB } from "quick.db";
 import { error } from "console";
-import post from "../functions/post";
-import config from "../../config";
 import TelegramClient from "../classes/Client";
+import config from "../../config";
+import post from "../functions/post";
 
 export default async (client: TelegramClient) => {
     try {

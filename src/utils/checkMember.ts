@@ -1,7 +1,7 @@
 import { Context, NarrowedContext } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
-import error from "./error";
 import markdownToHtml from "../functions/markdownToHtml";
+import error from "./error";
 
 export default async function checkMember(
   message: NarrowedContext<Context<Update>, Update.MessageUpdate<Message>>

@@ -1,5 +1,5 @@
-import TelegramClient from "../classes/Client";
 import getOrCreateReferralCode from "./getOrCreateReferralCode";
+import TelegramClient from "../classes/Client";
 
 export default async function generateReferralLink(bot: TelegramClient, userId: number): Promise<string> {
   const

@@ -1,12 +1,12 @@
-import error from "../../utils/error";
-import CommandType from "../../types/command";
+import getUserIdByReferralCode from "../../utils/getUserIdByReferralCode";
 import getUserProfile from "../../utils/getUserProfile";
 import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
-import getUserIdByReferralCode from "../../utils/getUserIdByReferralCode";
-import { Message } from "telegraf/typings/core/types/typegram";
-import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
+import CommandType from "../../types/command";
+import error from "../../utils/error";
 import { startMessageButtons } from "../../utils/startMessage";
+import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
+import { Message } from "telegraf/typings/core/types/typegram";
 
 const command: CommandType = {
   data: {

@@ -1,17 +1,17 @@
-import error from "../utils/error";
-import EventType from "../types/EventType";
-import checkCmdCooldown from "../utils/checkCmdCooldown";
-import checkOwner from "../utils/checkOwner";
-import checkAdmin from "../utils/checkAdmin";
-import checkMember from "../utils/checkMember";
-import forwardMessageToPartner from "../utils/forwardMessageToPartner";
 import { NarrowedContext } from "telegraf";
-import { MyContext } from "../types/MessageContext";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
+import { MyContext } from "../types/MessageContext";
+import forwardMessageToPartner from "../utils/forwardMessageToPartner";
+import updateUserLastSeen from "../utils/updateUserLastSeen";
+import checkCmdCooldown from "../utils/checkCmdCooldown";
 import setUserProfile from "../utils/setUserProfile";
 import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
-import updateUserLastSeen from "../utils/updateUserLastSeen";
+import checkMember from "../utils/checkMember";
+import checkAdmin from "../utils/checkAdmin";
+import checkOwner from "../utils/checkOwner";
+import EventType from "../types/EventType";
+import error from "../utils/error";
 
 const event: EventType = {
   name: "message",

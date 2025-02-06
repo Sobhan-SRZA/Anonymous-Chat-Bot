@@ -1,10 +1,10 @@
 import { Context, NarrowedContext } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
-import error from "./error";
-import CommandType from "../types/command";
 import { Collection } from "../classes/Collection";
-import client from "../..";
 import markdownToHtml from "../functions/markdownToHtml";
+import CommandType from "../types/command";
+import client from "../..";
+import error from "./error";
 
 export default async function checkCmdCooldown(
   message: NarrowedContext<Context<Update>, Update.MessageUpdate<Message>>,

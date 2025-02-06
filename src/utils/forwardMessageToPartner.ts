@@ -1,10 +1,10 @@
+import { UserPermissionDescriptions } from "../types/UserProfile";
 import { Context } from "telegraf";
-import error from "./error";
-import post from "../functions/post";
+import getRequiredPermission from "./getRequiredPermission";
 import getUserProfile from "./getUserProfile";
 import client from "../..";
-import getRequiredPermission from "./getRequiredPermission";
-import { UserPermissionDescriptions } from "../types/UserProfile";
+import error from "./error";
+import post from "../functions/post";
 
 export default async function forwardMessageToPartner(ctx: Context, partnerId: number) {
   try {

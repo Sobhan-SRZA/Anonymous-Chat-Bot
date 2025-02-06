@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = checkCmdCooldown;
 const tslib_1 = require("tslib");
-const error_1 = tslib_1.__importDefault(require("./error"));
 const Collection_1 = require("../classes/Collection");
-const __1 = tslib_1.__importDefault(require("../.."));
 const markdownToHtml_1 = tslib_1.__importDefault(require("../functions/markdownToHtml"));
+const __1 = tslib_1.__importDefault(require("../.."));
+const error_1 = tslib_1.__importDefault(require("./error"));
 async function checkCmdCooldown(message, command) {
     try {
         const userId = message.from.id;

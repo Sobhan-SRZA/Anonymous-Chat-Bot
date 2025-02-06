@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const quick_db_1 = require("quick.db");
 const console_1 = require("console");
-const post_1 = tslib_1.__importDefault(require("../functions/post"));
 const config_1 = tslib_1.__importDefault(require("../../config"));
+const post_1 = tslib_1.__importDefault(require("../functions/post"));
 exports.default = async (client) => {
     try {
         let driver;

@@ -1,7 +1,7 @@
 import { QuickDB } from "quick.db";
 import getUserProfile from "./getUserProfile";
-import Profile from "../types/UserProfile";
 import setUserProfile from "./setUserProfile";
+import Profile from "../types/UserProfile";
 
 export default async function updateUserProfileLastSeen(db: QuickDB, userId: number) {
   const profile: Profile | null = await getUserProfile(db, userId);

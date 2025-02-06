@@ -39,13 +39,13 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // Load discord client
-import os from "os";
+import { readdirSync } from "fs";
+import TelegramClient from "./src/classes/Client";
+import packageJSON from "./src/types/package.json";
+import logger from "./src/functions/logger";
 import error from "./src/utils/error";
 import post from "./src/functions/post";
-import TelegramClient from "./src/classes/Client";
-import logger from "./src/functions/logger";
-import packageJSON from "./src/types/package.json";
-import { readdirSync } from "fs";
+import os from "os";
 
 const
     client = new TelegramClient(),

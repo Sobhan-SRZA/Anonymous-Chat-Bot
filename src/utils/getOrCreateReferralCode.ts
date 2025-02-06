@@ -1,5 +1,5 @@
-import generateReferralCode from "./generateReferralCode";
 import { QuickDB } from "quick.db";
+import generateReferralCode from "./generateReferralCode";
 
 export default async function getOrCreateReferralCode(db: QuickDB, userId: number): Promise<string> {
   let code = await db.get(`referral.${userId}`);

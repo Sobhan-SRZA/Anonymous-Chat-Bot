@@ -1,5 +1,5 @@
-import error from "./error";
 import TelegramClient from "../classes/Client";
+import error from "./error";
 import post from "../functions/post";
 
 const randomQueues: { [gender: string]: number[] } = {

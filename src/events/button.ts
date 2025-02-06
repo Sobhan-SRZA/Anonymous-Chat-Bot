@@ -1,17 +1,17 @@
 import { getToggleButton, PermissionNames, permissionsInfo, permissionsMapping, UserGender } from "../types/UserProfile";
-import { CtxCallbackQuery, MyContext } from "../types/MessageContext";
 import { CallbackQuery, Update, Message, InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
+import { CtxCallbackQuery, MyContext } from "../types/MessageContext";
 import { startMessageButtons } from "../utils/startMessage";
 import { readFileSync } from "fs";
 import { Context } from "telegraf";
 import updateInlineKeyboard from "../utils/updateInlineKeyBoard";
+import generateReferralLink from "../utils/generateReferralLink";
+import updateUserLastSeen from "../utils/updateUserLastSeen";
 import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
 import setUserProfile from "../utils/setUserProfile";
 import EventType from "../types/EventType";
 import error from "../utils/error";
-import generateReferralLink from "../utils/generateReferralLink";
-import updateUserLastSeen from "../utils/updateUserLastSeen";
 
 const event: EventType = {
     name: "callback_query",

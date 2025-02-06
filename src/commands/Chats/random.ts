@@ -1,7 +1,7 @@
+import getUserProfile from "../../utils/getUserProfile";
 import CommandType from "../../types/command";
 import cleanupUser from "../../utils/cleanupUser";
 import error from "../../utils/error";
-import getUserProfile from "../../utils/getUserProfile";
 
 const command: CommandType = {
   data: {

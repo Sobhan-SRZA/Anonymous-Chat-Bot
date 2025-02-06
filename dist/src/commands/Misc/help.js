@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const fs_1 = require("fs");
-const error_1 = tslib_1.__importDefault(require("../../utils/error"));
 const firstUpperCase_1 = tslib_1.__importDefault(require("../../functions/firstUpperCase"));
 const markdownToHtml_1 = tslib_1.__importDefault(require("../../functions/markdownToHtml"));
+const error_1 = tslib_1.__importDefault(require("../../utils/error"));
 const command = {
     data: {
         name: "help",

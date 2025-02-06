@@ -1,7 +1,7 @@
-import CommandType from "../../types/command";
-import error from "../../utils/error";
 import generateReferralLink from "../../utils/generateReferralLink";
 import getUserProfile from "../../utils/getUserProfile";
+import CommandType from "../../types/command";
+import error from "../../utils/error";
 
 const command: CommandType = {
   data: {

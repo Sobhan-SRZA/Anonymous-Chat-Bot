@@ -1,7 +1,7 @@
+import { Message, Update } from "telegraf/typings/core/types/typegram";
+import { NarrowedContext } from "telegraf";
 import { MyContext } from "./MessageContext";
 import TelegramClient from "../classes/Client";
-import { NarrowedContext } from "telegraf";
-import { Message, Update } from "telegraf/typings/core/types/typegram";
 
 type Categories = "misc" | "admin" | "owner" | "chats";
 

@@ -1,8 +1,8 @@
 import { readdirSync } from "fs";
 import CommandType, { Categories } from "../../types/command";
-import error from "../../utils/error";
 import firstUpperCase from "../../functions/firstUpperCase";
 import markdownToHtml from "../../functions/markdownToHtml";
+import error from "../../utils/error";
 
 const command: CommandType = {
   data: {

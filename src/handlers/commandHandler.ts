@@ -1,8 +1,8 @@
-import error from "../utils/error";
-import post from "../functions/post";
-import CommandType from "../types/command";
 import { readdirSync } from "fs";
 import TelegramClient from "../classes/Client";
+import CommandType from "../types/command";
+import error from "../utils/error";
+import post from "../functions/post";
 
 export default async (client: TelegramClient) => {
     try {
