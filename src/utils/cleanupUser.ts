@@ -1,32 +1,14 @@
-import error from "./error";
 import TelegramClient from "../classes/Client";
+import error from "./error";
 import post from "../functions/post";
 
-const randomQueues: { [gender: string]: number[] } = {
-  male: [],
-  female: [],
-  other: []
-};
 export default async function cleanupUser(client: TelegramClient, userId: number) {
-  let index = client.anonQueue.indexOf(userId);
-  if (index > -1) 
-    client.anonQueue.splice(index, 1);
-  
-
-  for (const gender in randomQueues) {
-    index = randomQueues[gender].indexOf(userId);
-    if (index > -1) 
-      randomQueues[gender].splice(index, 1);
-    
-  }
-
-  if (client.referralWaiting.has(userId)) 
-    client.referralWaiting.delete(userId);
-
   if (client.activeChats.has(userId)) {
     const partnerId = client.activeChats.get(userId)!;
     client.activeChats.delete(userId);
     client.activeChats.delete(partnerId);
+    client.chatMessages.delete(userId);
+    client.chatMessages.delete(partnerId);
     try {
       return await client.telegram.sendMessage(
         partnerId,
@@ -40,10 +22,9 @@ export default async function cleanupUser(client: TelegramClient, userId: number
 }
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const quick_db_1 = require("quick.db");
 const console_1 = require("console");
-const post_1 = tslib_1.__importDefault(require("../functions/post"));
 const config_1 = tslib_1.__importDefault(require("../../config"));
+const post_1 = tslib_1.__importDefault(require("../functions/post"));
 exports.default = async (client) => {
     try {
         let driver;
@@ -44,11 +44,10 @@ exports.default = async (client) => {
 };
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */ 
 //# sourceMappingURL=database.js.map

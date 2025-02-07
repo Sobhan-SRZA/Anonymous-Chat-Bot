@@ -1,10 +1,10 @@
 import { Context, NarrowedContext } from "telegraf";
 import { Message, Update } from "telegraf/typings/core/types/typegram";
-import error from "./error";
-import CommandType from "../types/command";
 import { Collection } from "../classes/Collection";
-import escapeMarkdown from "../functions/escapeMarkdown";
+import markdownToHtml from "../functions/markdownToHtml";
+import CommandType from "../types/command";
 import client from "../..";
+import error from "./error";
 
 export default async function checkCmdCooldown(
   message: NarrowedContext<Context<Update>, Update.MessageUpdate<Message>>,
@@ -20,17 +20,29 @@ export default async function checkCmdCooldown(
       cooldownDuration = (command.cooldown ?? 3),
       cooldownAmount = cooldownDuration * 1000;
 
-
+    let msg: Message.TextMessage;
     if (timestamps.has(userId)) {
       const expirationTime = timestamps.get(userId)! + cooldownAmount;
       if (Date.now() < expirationTime) {
-        await message.replyWithMarkdownV2(escapeMarkdown(`**⚠ شما به دلیل اسپم ممنوع شدید!**\nبدلیل اسپم از دستور **/${command.data.name}** به مدت \`🕓 ${cooldownDuration} ثانیه\` ممنوع شدید!\n لطفا پس از اتمام زمان دوباره تلاش کنید.`))
+        msg = await message.reply(
+          markdownToHtml(`**⚠ شما به دلیل اسپم ممنوع شدید!**\nبدلیل اسپم از دستور **/${command.data.name}** به مدت \`🕓 ${cooldownDuration} ثانیه\` ممنوع شدید!\n لطفا پس از اتمام زمان دوباره تلاش کنید.`),
+          { reply_parameters: { message_id: message.msgId }, parse_mode: "HTML" }
+        )
         return true;
       }
     }
 
     timestamps.set(userId, Date.now());
-    setTimeout(() => timestamps.delete(userId), cooldownAmount);
+    setTimeout(async () => {
+      timestamps.delete(userId);
+      try {
+        if (msg && msg.text) {
+          await client.telegram.deleteMessage(message.chat.id, message.msgId);
+          await client.telegram.deleteMessage(message.chat.id, msg.message_id);
+        }
+        
+      } catch { }
+    }, cooldownAmount);
 
     return false;
   } catch (e: any) {
@@ -39,10 +51,9 @@ export default async function checkCmdCooldown(
 }
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

@@ -1,8 +1,8 @@
-import error from "../utils/error";
-import post from "../functions/post";
-import CommandType from "../types/command";
 import { readdirSync } from "fs";
 import TelegramClient from "../classes/Client";
+import CommandType from "../types/command";
+import error from "../utils/error";
+import post from "../functions/post";
 
 export default async (client: TelegramClient) => {
     try {
@@ -34,10 +34,9 @@ async function loadCommand(dirname: string, client: TelegramClient) {
 }
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

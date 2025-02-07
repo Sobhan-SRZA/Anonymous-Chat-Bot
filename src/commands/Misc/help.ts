@@ -1,8 +1,8 @@
 import { readdirSync } from "fs";
 import CommandType, { Categories } from "../../types/command";
-import error from "../../utils/error";
 import firstUpperCase from "../../functions/firstUpperCase";
 import markdownToHtml from "../../functions/markdownToHtml";
+import error from "../../utils/error";
 
 const command: CommandType = {
   data: {
@@ -21,21 +21,25 @@ const command: CommandType = {
       categories.forEach(async dir => {
         commandList += `**${firstUpperCase(dir)}**\n${client.cmds_info_list_str(dir.toLowerCase() as Categories)}\n`;
       });
-      return await ctx.reply(markdownToHtml(`${botDescription}**لیست دستورات ربات:**\n${commandList}`), {
-        parse_mode: "HTML"
-      })
+      return await ctx.reply(
+        markdownToHtml(`${botDescription}**لیست دستورات ربات:**\n${commandList}`),
+        {
+          parse_mode: "HTML",
+          reply_parameters: { message_id: ctx.msgId }
+        }
+      )
     } catch (e: any) {
       error(e)
     }
   }
 };
+
 export default command;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */

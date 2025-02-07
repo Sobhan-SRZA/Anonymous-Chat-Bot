@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
+const fs_1 = require("fs");
 const error_1 = tslib_1.__importDefault(require("../utils/error"));
 const post_1 = tslib_1.__importDefault(require("../functions/post"));
-const fs_1 = require("fs");
 exports.default = async (client) => {
     try {
         await loadCommand(`${process.cwd()}/dist/src/commands`, client);
@@ -33,11 +33,10 @@ async function loadCommand(dirname, client) {
 }
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */ 
 //# sourceMappingURL=commandHandler.js.map

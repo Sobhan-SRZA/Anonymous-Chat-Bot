@@ -39,13 +39,13 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // Load discord client
-import os from "os";
+import { readdirSync } from "fs";
+import TelegramClient from "./src/classes/Client";
+import packageJSON from "./src/types/package.json";
+import logger from "./src/functions/logger";
 import error from "./src/utils/error";
 import post from "./src/functions/post";
-import TelegramClient from "./src/classes/Client";
-import logger from "./src/functions/logger";
-import packageJSON from "./src/types/package.json";
-import { readdirSync } from "fs";
+import os from "os";
 
 const
     client = new TelegramClient(),
@@ -150,10 +150,9 @@ if (client.config.source.anti_crash) {
 export default client;
 /**
  * @copyright
- * Coded by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
- * @copyright
- * Work for Persian Caesar | https://dsc.gg/persian-caesar
- * @copyright
- * Please Mention Us "Persian Caesar", When Have Problem With Using This Code!
- * @copyright
+ * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA
+ * Developed for Persian Caesar | https://github.com/Persian-Caesar | https://dsc.gg/persian-caesar
+ *
+ * If you encounter any issues or need assistance with this code,
+ * please make sure to credit "Persian Caesar" in your documentation or communications.
  */
