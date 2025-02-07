@@ -5,9 +5,7 @@ const tslib_1 = require("tslib");
 const error_1 = tslib_1.__importDefault(require("../utils/error"));
 function post(data, name, color1, color2) {
     try {
-        const dataColor = color1 || "yellow";
-        const textColor = color2 || "green";
-        const message = `${(`[${name || "U"}]〢┃  `)[dataColor]}`;
+        const dataColor = color1 || "yellow", textColor = color2 || "green", message = `${(`[${name || "U"}]〢┃  `)[dataColor]}`;
         if (typeof data == "string")
             console.log(message +
                 data

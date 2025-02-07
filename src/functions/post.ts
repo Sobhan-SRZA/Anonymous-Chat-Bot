@@ -4,9 +4,11 @@ type Color = "strip" | "stripColors" | "black" | "red" | "green" | "yellow" | "b
 
 export default function post(data: any, name: string, color1?: Color, color2?: Color) {
   try {
-    const dataColor = color1 || "yellow";
-    const textColor = color2 || "green";
-    const message = `${(`[${name || "U"}]〢┃  `)[dataColor]}`;
+    const
+      dataColor = color1 || "yellow",
+      textColor = color2 || "green",
+      message = `${(`[${name || "U"}]〢┃  `)[dataColor]}`;
+
     if (typeof data == "string")
       console.log(
         message +

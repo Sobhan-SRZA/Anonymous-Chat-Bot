@@ -10,10 +10,10 @@ export default class TelegramClient extends Telegraf<MyContext> {
     cooldowns: Collection<string, Collection<number, number>>;
     config;
     db: QuickDB | null;
-    anonQueue: number[];
+
+    // Anonymous chat variuables  
     activeChats: Collection<number, number>;
-    referralWaiting: Set<number>;
-    randomQueues: { [gender: string]: number[] };
+    chatMessages: Collection<number, number[]>
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);
@@ -31,15 +31,9 @@ export default class TelegramClient extends Telegraf<MyContext> {
             return next();
         });
 
-        // Anon chat variuables  
-        this.anonQueue = [];
+        // Anonymous chat variuables  
         this.activeChats = new Collection();
-        this.referralWaiting = new Set();
-        this.randomQueues = {
-            male: [],
-            female: [],
-            other: []
-        }
+        this.chatMessages = new Collection();
     }
 
     cmds_info_list_str(category_name: Categories) {
@@ -47,7 +41,7 @@ export default class TelegramClient extends Telegraf<MyContext> {
         this.commands
             .filter(cmd => cmd.category === category_name)
             .forEach((cmd) => {
-                description += `/${cmd.data.name} - \`${cmd.data.description}\`\n`;
+                description += `**/${cmd.data.name}** - ${cmd.data.description}\n`;
             });
 
         return description;

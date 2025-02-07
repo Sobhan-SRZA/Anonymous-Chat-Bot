@@ -1,9 +1,10 @@
 import { MaybeInaccessibleMessage, User } from "telegraf/typings/core/types/typegram";
 import { Context } from "telegraf";
+import { Collection } from "../classes/Collection";
 
 // Custom session
 interface MySession {
-    lastMessage?: {
+    lastMessage?: Collection<number, {
         text: string | undefined;
         chat: {
             id: number;
@@ -14,7 +15,8 @@ interface MySession {
             username: string | undefined
         };
         message_id: number | undefined;
-    };
+        to?:number;
+    }>;
 }
 
 // Custom telegraf context

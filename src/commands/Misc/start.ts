@@ -1,12 +1,13 @@
+import { startMessageButtons } from "../../utils/startMessage";
+import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
+import { Message } from "telegraf/typings/core/types/typegram";
 import getUserIdByReferralCode from "../../utils/getUserIdByReferralCode";
 import getUserProfile from "../../utils/getUserProfile";
 import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
 import CommandType from "../../types/command";
+import cleanupUser from "../../utils/cleanupUser";
 import error from "../../utils/error";
-import { startMessageButtons } from "../../utils/startMessage";
-import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
-import { Message } from "telegraf/typings/core/types/typegram";
 
 const command: CommandType = {
   data: {
@@ -20,7 +21,8 @@ const command: CommandType = {
     try {
       const
         db = client.db!,
-        userProfile = await getUserProfile(db, ctx.from.id);
+        userId = ctx.from.id,
+        userProfile = await getUserProfile(db, userId);
 
       if (args[0]) {
         const referrerId = await getUserIdByReferralCode(db, args[0]);
@@ -33,14 +35,39 @@ const command: CommandType = {
         if (referrerId.toString() === ctx.from.id.toString())
           return await ctx.reply(
             markdownToHtml("حالت خوبه؟ اگه بخوای شماره روانشناسم رو بهت بدم باهاش حرف بزن شاید کمک کرد!\nدرک میکنم بعضی وقتا با خودمون حرف میزنیم ولی من نمیتونم در این مورد بهت کمک کنم 😶"),
-            { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
+            {
+              parse_mode: "HTML",
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+                  ]
+                ]
+              },
+              reply_parameters: { message_id: ctx.msgId }
+            }
           )
 
-
-        return await ctx.reply(
-          "شما یک ورودی وارد کردید",
-          { reply_parameters: { message_id: ctx.msgId } }
+        client.activeChats.set(userId, referrerId);
+        client.activeChats.set(referrerId, userId);
+        await ctx.reply(
+          markdownToHtml(`شما با **${userProfile!.nickname || `User_${args[0]}`}** جفت شدید. میتونید پیام هاتون رو ارسال کنید.`),
+          {
+            parse_mode: "HTML",
+            reply_parameters: {
+              message_id: ctx.msgId
+            }
+          }
         )
+        try {
+          return await client.telegram.sendMessage(
+            referrerId,
+            "شما با یک کاربر ناشناس از طریق لینک جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید."
+          );
+        } catch (err) {
+          await ctx.reply("متاسفانه پیام به کاربر مقابل ارسال نشد.");
+          return await cleanupUser(client, userId);
+        }
       }
 
       let message: Message.TextMessage | null = null;

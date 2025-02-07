@@ -9,10 +9,9 @@ class TelegramClient extends telegraf_1.Telegraf {
     cooldowns;
     config;
     db;
-    anonQueue;
+    // Anonymous chat variuables  
     activeChats;
-    referralWaiting;
-    randomQueues;
+    chatMessages;
     constructor(token, options) {
         super(token || config_1.default.bot.token, options);
         this.config = config_1.default;
@@ -27,22 +26,16 @@ class TelegramClient extends telegraf_1.Telegraf {
             }
             return next();
         });
-        // Anon chat variuables  
-        this.anonQueue = [];
+        // Anonymous chat variuables  
         this.activeChats = new Collection_1.Collection();
-        this.referralWaiting = new Set();
-        this.randomQueues = {
-            male: [],
-            female: [],
-            other: []
-        };
+        this.chatMessages = new Collection_1.Collection();
     }
     cmds_info_list_str(category_name) {
         let description = "";
         this.commands
             .filter(cmd => cmd.category === category_name)
             .forEach((cmd) => {
-            description += `/${cmd.data.name} - \`${cmd.data.description}\`\n`;
+            description += `**/${cmd.data.name}** - ${cmd.data.description}\n`;
         });
         return description;
     }

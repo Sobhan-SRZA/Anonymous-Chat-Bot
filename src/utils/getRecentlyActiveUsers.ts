@@ -1,20 +1,24 @@
 import { QuickDB } from "quick.db";
 import Profile from "../types/UserProfile";
+interface newProfile extends Profile { id?: number }
 
-export default async function getRecentlyActiveUsers(db: QuickDB, onlineThreshold = 5 * 60 * 1000): Promise<Profile[]> {
+export default async function getRecentlyActiveUsers(db: QuickDB, onlineThreshold = 5 * 60 * 1000): Promise<newProfile[]> {
   const
-    allEntries = await db.all(),
+    allUsers: Record<string, Profile> | null = await db.get("user")!,
     currentTime = Date.now(),
     activeProfiles: Profile[] = [];
 
-  for (const entry of allEntries) {
-    if (entry.id.startsWith("user.")) {
-      const profile: Profile = entry.value;
-      if (profile.permissions?.random_chat && profile.lastSeen && (currentTime - profile.lastSeen < onlineThreshold)) {
-        activeProfiles.push(profile);
+  for (const user in allUsers) {
+      let profile: newProfile = allUsers[user];
+      profile = {
+        ...profile,
+        id: +user
       }
-    }
+      if (profile.permissions?.random_chat && profile.lastSeen && (currentTime - profile.lastSeen < onlineThreshold))
+        activeProfiles.push(profile);
+      
   }
+
   return activeProfiles;
 }
 /**

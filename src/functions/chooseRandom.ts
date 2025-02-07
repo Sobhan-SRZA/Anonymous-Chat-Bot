@@ -1,4 +1,4 @@
-export default function chooseRandom(array: any[]) {
+export default function chooseRandom<T>(array: T[]) {
   return array[Math.floor(Math.random() * array.length)]
 }
 /**
