@@ -6,7 +6,6 @@ import getUserProfile from "../../utils/getUserProfile";
 import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
 import CommandType from "../../types/command";
-import cleanupUser from "../../utils/cleanupUser";
 import error from "../../utils/error";
 
 const command: CommandType = {
@@ -22,14 +21,25 @@ const command: CommandType = {
       const
         db = client.db!,
         userId = ctx.from.id,
-        userProfile = await getUserProfile(db, userId);
+        userProfile = await getUserProfile(db, userId),
+        reply_markup = {
+          inline_keyboard: [
+            [
+              { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+            ]
+          ]
+        };
 
       if (args[0]) {
         const referrerId = await getUserIdByReferralCode(db, args[0]);
         if (!referrerId)
           return await ctx.reply(
             markdownToHtml("ارتباط بر قرار نشد 😕\nبنظر میرسه کد اشتباه وارد شده و یا اینکه منقضی شده پس بهتره از یه کد جدید استفاده بکنی."),
-            { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
+            {
+              parse_mode: "HTML",
+              reply_markup,
+              reply_parameters: { message_id: ctx.msgId }
+            }
           )
 
         if (referrerId.toString() === ctx.from.id.toString())
@@ -37,37 +47,55 @@ const command: CommandType = {
             markdownToHtml("حالت خوبه؟ اگه بخوای شماره روانشناسم رو بهت بدم باهاش حرف بزن شاید کمک کرد!\nدرک میکنم بعضی وقتا با خودمون حرف میزنیم ولی من نمیتونم در این مورد بهت کمک کنم 😶"),
             {
               parse_mode: "HTML",
-              reply_markup: {
-                inline_keyboard: [
-                  [
-                    { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
-                  ]
-                ]
-              },
+              reply_markup,
               reply_parameters: { message_id: ctx.msgId }
             }
           )
 
-        client.activeChats.set(userId, referrerId);
-        client.activeChats.set(referrerId, userId);
-        await ctx.reply(
-          markdownToHtml(`شما با **${userProfile!.nickname || `User_${args[0]}`}** جفت شدید. میتونید پیام هاتون رو ارسال کنید.`),
+        const partnerProfile = await getUserProfile(db, referrerId);
+        if (!partnerProfile)
+          return await ctx.reply(
+            markdownToHtml("بنظر میرسه کسی که با این کد لینک خصوصی داره هنوز پروفایلی نداره :/"),
+            {
+              parse_mode: "HTML",
+              reply_markup,
+              reply_parameters: { message_id: ctx.msgId }
+            }
+          )
+
+        const msg = await ctx.reply(
+          markdownToHtml(`ارتباط با **${partnerProfile.nickname || `User_${args[0]}`}** برقرار شد؛ حرفی، سخنی، انتقادی، نظری یا هرچی داشتی الان میتونی بفرستی و براش ارسال بشه.${"\n\n" + (partnerProfile.welcome_message || "")}`),
           {
             parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: "انصراف", callback_data: "cancel_sending" }
+                ]
+              ]
+            },
             reply_parameters: {
               message_id: ctx.msgId
             }
           }
         )
-        try {
-          return await client.telegram.sendMessage(
-            referrerId,
-            "شما با یک کاربر ناشناس از طریق لینک جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید."
-          );
-        } catch (err) {
-          await ctx.reply("متاسفانه پیام به کاربر مقابل ارسال نشد.");
-          return await cleanupUser(client, userId);
-        }
+        // Set last message to answer  
+        ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
+          text: msg.text,
+          message_id: msg.message_id,
+          chat: {
+            id: msg.chat.id,
+            type: msg.chat.type
+          },
+          from: {
+            id: msg.from!.id,
+            username: msg.from!.username
+          },
+          to: referrerId
+        });
+
+        await ctx.scene.enter("continue_or_answer_chat");
+        return;
       }
 
       let message: Message.TextMessage | null = null;

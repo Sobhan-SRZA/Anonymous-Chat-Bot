@@ -11,6 +11,7 @@ const command: CommandType = {
   },
   category: "misc",
   cooldown: 2,
+  only_privet: true,
   run: async (client, ctx) => {
     try {
       let commandList = "";

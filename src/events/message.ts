@@ -4,9 +4,6 @@ import { MyContext } from "../types/MessageContext";
 import forwardMessageToPartner from "../utils/forwardMessageToPartner";
 import updateUserLastSeen from "../utils/updateUserLastSeen";
 import checkCmdCooldown from "../utils/checkCmdCooldown";
-import setUserProfile from "../utils/setUserProfile";
-import getUserProfile from "../utils/getUserProfile";
-import markdownToHtml from "../functions/markdownToHtml";
 import checkMember from "../utils/checkMember";
 import checkAdmin from "../utils/checkAdmin";
 import checkOwner from "../utils/checkOwner";
@@ -19,9 +16,7 @@ const event: EventType = {
     try {
       const
         db = client.db!,
-        userId = message.from!.id,
-        lastMessage = message.session.lastMessage && message.session.lastMessage.get(client.botInfo!.id),
-        profile = await getUserProfile(db, userId) || {};
+        userId = message.from!.id;
 
       // Filter the bots
       if (message.from.is_bot)
@@ -79,104 +74,14 @@ const event: EventType = {
         return await command.run(client, message, args);
       }
 
-      // Do work with last message
-      if (lastMessage && lastMessage.text && lastMessage.chat.id === message.chat.id) {
-
-        // Set last activity
-        await updateUserLastSeen(db, userId);
-
-        // Change nickname
-        if (lastMessage.text.includes("برای تغییر نام نمایشی، نام را ارسال کنید.")) {
-          profile.nickname = message.text;
-          await setUserProfile(db, userId, profile);
-          message.session = {};
-          return await client.telegram.editMessageText(
-            lastMessage.chat.id, lastMessage.message_id, message.inlineMessageId,
-            markdownToHtml(`نام نمایشی شما با موفقیت تغییر یافت✔\nنام نمایشی شما:\`\`\`\n${profile.nickname}\n\`\`\``),
-            {
-              parse_mode: "HTML",
-              reply_markup: {
-                inline_keyboard: [
-                  [
-                    { text: "حذف 🗑", callback_data: "delete_nickname" },
-                    { text: "بازگشت ↩", callback_data: "setting" }
-                  ]
-                ]
-              }
-            }
-          )
-        }
-
-        // Change welcome message
-        if (lastMessage.text.includes("تغییر پیغام خوش آمد گویی")) {
-
-          // Set last activity
-          await updateUserLastSeen(db, userId);
-
-          profile.welcome_message = message.text;
-          await setUserProfile(db, userId, profile)
-          message.session = {};
-          return await client.telegram.editMessageText(
-            lastMessage.chat.id, lastMessage.message_id, message.inlineMessageId,
-            markdownToHtml(`پیغام خوش آمد گویی شما با موفقیت تغییر یافت✔\پیغام خوش آمد گویی شما:\`\`\`\n${profile.welcome_message}\n\`\`\``),
-            {
-              parse_mode: "HTML",
-              reply_markup: {
-                inline_keyboard: [
-                  [
-                    { text: "حذف 🗑", callback_data: "delete_welcome_message" },
-                    { text: "بازگشت ↩", callback_data: "setting" }
-                  ]
-                ]
-              }
-            }
-          )
-        }
-
-        // Send message to user
-        if (lastMessage.text.includes("پیام خودتون رو ارسال کنید تا برای کاربر ارسال بشه.")) {
-          const partnerId = lastMessage.to!;
-          if (!client.chatMessages.has(userId) && !client.chatMessages.has(partnerId)) {
-            client.chatMessages.set(partnerId, [])
-            client.chatMessages.set(userId, [])
-          }
-          const
-            partnerMessages = client.chatMessages.get(partnerId)!,
-            userMessages = client.chatMessages.get(userId)!,
-            forwardedMessage = await forwardMessageToPartner(message, partnerId);
-
-          partnerMessages.push(forwardedMessage.message_id);
-          userMessages.push(message.msgId);
-          client.chatMessages.set(partnerId, partnerMessages);
-          client.chatMessages.set(userId, userMessages);
-          await client.telegram.editMessageText(
-            lastMessage.chat.id, lastMessage.message_id, message.inlineMessageId,
-            markdownToHtml("پیغام شما ارسال شد ✅"),
-            {
-              parse_mode: "HTML"
-            }
-          )
-          message.session.lastMessage!.delete(client.botInfo!.id)
-          return;
-        }
-      }
-
       // Chat forwarding
-      if (client.activeChats.has(userId)) {
-        const partnerId = client.activeChats.get(userId)!;
-        if (!client.chatMessages.has(userId) && !client.chatMessages.has(partnerId)) {
-          client.chatMessages.set(partnerId, [])
-          client.chatMessages.set(userId, [])
-        }
-        const
-          partnerMessages = client.chatMessages.get(partnerId)!,
-          userMessages = client.chatMessages.get(userId)!,
-          forwardedMessage = await forwardMessageToPartner(message, partnerId);
+      const
+        partnerId = await client.activeChats.get(`${userId}`),
+        chatMessages = await client.chatMessages.get(`${userId}.${partnerId}`);
 
-        partnerMessages.push(forwardedMessage.message_id);
-        userMessages.push(message.msgId);
-        client.chatMessages.set(partnerId, partnerMessages);
-        client.chatMessages.set(userId, userMessages);
+      if (partnerId && !chatMessages) {
+        const forwardedMessage = await forwardMessageToPartner(message, partnerId);
+        await client.chatMessages.push(`${userId}.${partnerId}`, [message.msgId, forwardedMessage.message_id]);
         return;
       }
 

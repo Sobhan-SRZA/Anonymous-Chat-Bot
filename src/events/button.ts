@@ -5,6 +5,7 @@ import { startMessageButtons } from "../utils/startMessage";
 import { readFileSync } from "fs";
 import { Collection } from "../classes/Collection";
 import { Context } from "telegraf";
+import deleteClickedInlineKeyBoard from "../utils/deleteClickedInlineKeyBoard";
 import getUserIdByReferralCode from "../utils/getUserIdByReferralCode";
 import getOrCreateReferralCode from "../utils/getOrCreateReferralCode";
 import getRecentlyActiveUsers from "../utils/getRecentlyActiveUsers";
@@ -40,7 +41,6 @@ const event: EventType = {
                     [{ text: "🤔 این ربات چیه؟", callback_data: "faq_about" }],
                     [{ text: "🔗 چطور لینک ناشناس بسازم؟", callback_data: "faq_link" }],
                     [{ text: "📬 چطور پیام ناشناس دریافت کنم؟", callback_data: "faq_receive" }],
-                    [{ text: "👥 چطور به یه گروه پیام ناشناس بفرستم؟", callback_data: "faq_group" }],
                     [{ text: "⚙ تنظیمات ربات", callback_data: "faq_settings" }],
                     [{ text: "🚫 چطوری افراد بلاک‌شده رو آزاد کنم؟", callback_data: "faq_unblock" }],
                     [{ text: "بازگشت 🔙", callback_data: "return_start" }]
@@ -49,7 +49,9 @@ const event: EventType = {
 
             // Reset lastMessage
             ctx.session = {
-                lastMessage: new Collection()
+                __scenes: {
+                    lastMessage: new Collection()
+                }
             };
 
             // Set last activity
@@ -104,6 +106,7 @@ const event: EventType = {
                         ]);
                     }
 
+                    inline_keyboard.push([{ text: "مسدودی ها ⛔", callback_data: "blocked_list" }]);
                     inline_keyboard.push([{ text: "بازگشت ↩", callback_data: "return_start" }]);
 
                     return await ctx.editMessageText("تنظیمات:", {
@@ -146,7 +149,7 @@ const event: EventType = {
                             }
                         }
                     ) as Update.Edited & Message.TextMessage;
-                    ctx.session.lastMessage!.set(msg.from!.id, {
+                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
                         text: msg.text,
                         message_id: msg.message_id,
                         chat: {
@@ -158,6 +161,8 @@ const event: EventType = {
                             username: msg.from!.username
                         }
                     });
+
+                    await ctx.scene.enter("change_nickname");
                     return;
                 }
 
@@ -195,7 +200,7 @@ const event: EventType = {
                             }
                         }
                     ) as Update.Edited & Message.TextMessage;
-                    ctx.session.lastMessage!.set(msg.from!.id, {
+                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
                         text: msg.text,
                         message_id: msg.message_id,
                         chat: {
@@ -207,6 +212,8 @@ const event: EventType = {
                             username: msg.from!.username
                         }
                     });
+
+                    await ctx.scene.enter("change_welcome_message");
                     return;
                 }
 
@@ -235,7 +242,9 @@ const event: EventType = {
                                     { text: "تغییر نام نمایشی 👤", callback_data: "change_nickname" },
                                     { text: "پیام خوش آمدگویی 👋🏻", callback_data: "change_welcome_messge" }
                                 ],
-                                [{ text: "بازگشت 🔙", callback_data: "return_start" }]
+                                [
+                                    { text: "بازگشت 🔙", callback_data: "return_start" }
+                                ]
                             ]
                         }
                     })
@@ -297,8 +306,8 @@ const event: EventType = {
                             getUserCode = await getOrCreateReferralCode(db, userId),
                             getPartnerCode = await getOrCreateReferralCode(db, partnerId);
 
-                        client.activeChats.set(userId, partnerId);
-                        client.activeChats.set(partnerId, userId);
+                        await client.activeChats.set(`${userId}`, partnerId);
+                        await client.activeChats.set(`${partnerId}`, userId);
                         await client.telegram.editMessageText(
                             msg.chat.id,
                             msg.message_id,
@@ -306,7 +315,7 @@ const event: EventType = {
                             `شما با یک کاربر ناشناس ${gender ? `با جنسیت ${gender} ` : ""}جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید.`
                         );
                         if (partnerProfile)
-                            await ctx.reply(markdownToHtml(`شما با کاربر **${partnerProfile.nickname || `user_${getPartnerCode}`}** جفت شده اید.${"\n\n" + (partnerProfile.welcome_message || "")}`), {
+                            await ctx.reply(markdownToHtml(`شما با کاربر **${partnerProfile.nickname || `User_${getPartnerCode}`}** جفت شده اید.${"\n\n" + (partnerProfile.welcome_message || "")}`), {
                                 parse_mode: "HTML",
                                 reply_parameters: { message_id: msg.message_id }
                             })
@@ -351,8 +360,10 @@ const event: EventType = {
                 // Cancel sending message
                 case "cancel_sending": {
                     await ctx.answerCbQuery("ارسال پیغام لغو شد.");
-                    ctx.session.lastMessage!.delete(client.botInfo!.id);
-                    return await ctx.deleteMessage();
+                    ctx.session.__scenes!.lastMessage!.delete(client.botInfo!.id);
+                    await ctx.deleteMessage();
+                    await ctx.scene.leave();
+                    return;
                 }
             }
 
@@ -383,7 +394,7 @@ const event: EventType = {
             // Faq list
             if (callback_data.startsWith("faq_")) {
                 const
-                    getMainButtonText = FaqButtons.find(a => {
+                    clickedButton = FaqButtons.find(a => {
                         const button = a[0] as InlineKeyboardButton.CallbackButton
                         return button.callback_data === callback_data;
                     })![0],
@@ -393,7 +404,7 @@ const event: EventType = {
                     }),
                     text = readFileSync(`./storage/${callback_data}.txt`).toString();
 
-                await ctx.answerCbQuery(getMainButtonText.text);
+                await ctx.answerCbQuery(clickedButton.text);
                 return await ctx.editMessageText(markdownToHtml(text.replace("{username}", client.botInfo!.first_name)), {
                     parse_mode: "HTML",
                     reply_markup: {
@@ -408,13 +419,13 @@ const event: EventType = {
                     getPartnerCode = callback_data.replace("end_chat_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!;
 
-                if (!client.chatMessages.has(userId)) {
+                if (!(await client.activeChats.has(`${userId}`))) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                     return await ctx.answerCbQuery("چت قبلاً بسته شده است.");
                 }
 
-                client.activeChats.delete(userId);
-                client.activeChats.delete(partnerId);
+                await client.activeChats.delete(`${userId}`);
+                await client.activeChats.delete(`${partnerId}`);
 
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                 await ctx.answerCbQuery("چت با موفقیت بسته شد.");
@@ -424,7 +435,9 @@ const event: EventType = {
                     },
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "🗑 پاکسازی تاریخچه چت", callback_data: `delete_messages_${getPartnerCode}` }]
+                            [
+                                { text: "🗑 پاکسازی تاریخچه چت", callback_data: `delete_messages_${getPartnerCode}` }
+                            ]
                         ]
                     }
                 })
@@ -434,22 +447,25 @@ const event: EventType = {
             if (callback_data.startsWith("delete_messages_")) {
                 const
                     getPartnerCode = callback_data.replace("delete_messages_", ""),
-                    partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!;
+                    partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
+                    userMessageDB = `${userId}.${partnerId}`,
+                    userMessages = await client.chatMessages.get(userMessageDB),
+                    partnerMessages = userMessages?.map(a => a[1])!;
 
-                if (!client.chatMessages.has(userId)) {
+                if (!userMessages) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-                    return await ctx.answerCbQuery("چت قبلاً بسته شده است.");
+                    return await ctx.answerCbQuery("تاریخچه چت قبلا پاکسازی شده است.");
                 }
 
-                ctx.telegram.deleteMessages(partnerId, client.chatMessages.get(userId)!);
-                ctx.telegram.deleteMessages(userId, client.chatMessages.get(partnerId)!);
-                client.activeChats.delete(userId);
-                client.chatMessages.delete(userId);
-                client.activeChats.delete(partnerId);
-                client.chatMessages.delete(partnerId);
-
+                try {
+                    await ctx.telegram.deleteMessages(partnerId, partnerMessages);
+                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0]));
+                    await client.chatMessages.delete(userMessageDB);
+                    await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
+                } catch {
+                    await ctx.answerCbQuery("خطایی پیش آمد.");
+                }
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-                await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
                 return await ctx.reply("تاریخچه چت با موفقیت پاک شد.", {
                     reply_parameters: {
                         message_id: ctx.msgId!
@@ -460,22 +476,61 @@ const event: EventType = {
             // Anonymous chat delete conversion
             if (callback_data.startsWith("delete_message_")) {
                 const
-                    messageId = +callback_data.replace("delete_message_", ""),
-                    partnerId = client.activeChats.get(userId)!,
-                    message = ctx.update.callback_query.message! as Message.TextMessage,
-                    inline_keyboard = message.reply_markup!.inline_keyboard.filter(a => {
-                        const button = a[0] as InlineKeyboardButton.CallbackButton
-                        return button.callback_data !== callback_data;
-                    }) || [];
+                    [forwardMessageId, userMessageId] = callback_data.replace("delete_message_", "").split("-"),
+                    partnerId = (await client.activeChats.get(`${userId}`))!,
+                    inline_keyboard = await deleteClickedInlineKeyBoard(callbackQuery, (button) => {
+                        return button.callback_data !== callbackQuery.data && !button.callback_data.startsWith("edit_message_");
+                    });
 
                 try {
-                    await ctx.telegram.deleteMessage(userId, messageId);
-                    await ctx.telegram.deleteMessage(partnerId, messageId);
+                    await client.telegram.deleteMessage(userId, +userMessageId).catch(null);
+                    await client.telegram.deleteMessage(partnerId, +forwardMessageId).catch(null);
                     await ctx.answerCbQuery("پیام حذف شد.");
-                } catch (e) {
+                } catch {
                     await ctx.answerCbQuery("خطا در حذف پیام!");
                 }
-                return await ctx.editMessageReplyMarkup({ inline_keyboard })
+
+                return await ctx.editMessageReplyMarkup({ inline_keyboard }).catch(null);
+            }
+
+            // Anonymous chat edit message
+            if (callback_data.startsWith("edit_message_")) {
+                await ctx.answerCbQuery("خیلی خوب، پیام ویرایش شده ی خودتون رو بفرستید.");
+                const
+                    messageId = callback_data.replace("edit_message_", ""),
+                    msg = await ctx.reply(
+                        "پیام خودتون رو ارسال کنید تا برای کاربر ویرایش شود.",
+                        {
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [
+                                        { text: "انصراف", callback_data: "cancel_sending" }
+                                    ]
+                                ]
+                            },
+                            reply_parameters: {
+                                message_id: ctx.msgId!
+                            }
+                        }
+                    ) as Update.Edited & Message.TextMessage;
+
+                // Set last message to answer  
+                ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
+                    text: msg.text,
+                    message_id: msg.message_id,
+                    chat: {
+                        id: msg.chat.id,
+                        type: msg.chat.type
+                    },
+                    from: {
+                        id: msg.from!.id,
+                        username: msg.from!.username
+                    },
+                    to: +messageId
+                });
+
+                await ctx.scene.enter("edit_message");
+                return;
             }
 
             // Anonymous chat contnue conversion or answer
@@ -500,7 +555,7 @@ const event: EventType = {
                     ) as Update.Edited & Message.TextMessage;
 
                 // Set last message to answer  
-                ctx.session.lastMessage!.set(msg.from!.id, {
+                ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
                     text: msg.text,
                     message_id: msg.message_id,
                     chat: {
@@ -514,9 +569,40 @@ const event: EventType = {
                     to: partnerId
                 });
 
+                await ctx.scene.enter("continue_or_answer_chat");
                 return;
             }
 
+            // Anonymous chat delete conversion
+            if (callback_data.startsWith("block_")) {
+                const
+                    getPartnerCode = callback_data.replace("block_", ""),
+                    partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
+                    userMessageDB = `${userId}.${partnerId}`,
+                    userMessages = await client.chatMessages.get(userMessageDB),
+                    partnerMessages = userMessages?.map(a => a[1])!;
+
+                if (!userMessages) {
+                    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+                    return await ctx.answerCbQuery("تاریخچه چت قبلا پاکسازی شده است.");
+                }
+
+                try {
+                    await ctx.telegram.deleteMessages(partnerId, partnerMessages);
+                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0]));
+                    await client.chatMessages.delete(userMessageDB);
+
+                    await ctx.answerCbQuery("تاریخچه ");
+                } catch {
+                    await ctx.answerCbQuery("خطایی پیش آمد.");
+                }
+                await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+                return await ctx.reply("تاریخچه چت با موفقیت پاک شد.", {
+                    reply_parameters: {
+                        message_id: ctx.msgId!
+                    }
+                })
+            }
         } catch (e: any) {
             error(e);
         }

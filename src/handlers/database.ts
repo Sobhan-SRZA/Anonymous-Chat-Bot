@@ -41,6 +41,11 @@ export default async (client: TelegramClient) => {
         const db = new QuickDB({ driver });
         await db.init();
         client.db = db;
+
+        // Anonymous chat variuables  
+        client.activeChats = client.db.table("activeChats");
+        client.chatMessages = client.db.table("chatMessages");
+        client.blocks = client.db.table("blocks");
         post(
             `Database Is Successfully Activated!! (Type: ${config.source.database.type.toLocaleUpperCase()})`,
             "S"
