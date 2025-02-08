@@ -8,7 +8,7 @@ import client from "../..";
 import error from "./error";
 import post from "../functions/post";
 
-export default async function forwardMessageToPartner(ctx: MyContext, partnerId: number, anonymousChat = false) {
+export default async function forwardMessageToPartner(ctx: MyContext, partnerId: number) {
   try {
     const
       db = client.db!,
@@ -28,27 +28,26 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
       message = ctx.message as Message.TextMessage,
       data: any = {},
       getUserCode = await getOrCreateReferralCode(db, ctx.from!.id),
-      getPartnerCode = await getOrCreateReferralCode(db, partnerId);
+      getPartnerCode = await getOrCreateReferralCode(db, partnerId),
+      userMessageDB = `${ctx.from!.id}.${partnerId}`,
+      userMessages = await client.chatMessages.get(userMessageDB);
 
-    if (!anonymousChat)
-      data.reply_markup = {
-        inline_keyboard: [
-          [
-            { text: "پاسخ ✍🏻", callback_data: `answer_${getUserCode}` },
-            { text: "بلاک ⛔", callback_data: `block_${getUserCode}` }
-          ]
+    data.reply_markup = {
+      inline_keyboard: [
+        [
+          { text: "پاسخ ✍🏻", callback_data: `answer_${getUserCode}` },
+          { text: "بلاک ⛔", callback_data: `block_${getUserCode}` }
         ]
-      };
-
+      ]
+    };
     if (message.reply_to_message) {
-      let message_id = message.reply_to_message.message_id;
-      if (message.reply_to_message.from!.id === ctx.from!.id)
-        message_id++;
+      let
+        message_id = message.reply_to_message.message_id,
+        partnerMessages = userMessages?.find(a => a[0] === message_id);
 
-      else
-        message_id--;
+      if (partnerMessages)
+        data.reply_to_message_id = partnerMessages[1];
 
-      data.reply_to_message_id = message_id;
     }
 
     let forwardedMessage: any;
@@ -68,21 +67,23 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
       )
     });
 
-    if (!anonymousChat)
-      await ctx.reply("🔹 کنترل چت:", {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "⛔ اتمام چت", callback_data: `end_chat_${getPartnerCode}` },
-              { text: "▶️ ادامه چت", callback_data: `continue_chat_${getPartnerCode}` },
-              { text: "🗑 حذف پیام", callback_data: `delete_message_${forwardedMessage?.message_id}` }
-            ]
+    await ctx.reply("🔹 کنترل چت:", {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "⛔ اتمام چت", callback_data: `end_chat_${getPartnerCode}` },
+            { text: "▶️ ادامه چت", callback_data: `continue_chat_${getPartnerCode}` }
+          ],
+          [
+            { text: "🗑 حذف پیام", callback_data: `delete_message_${forwardedMessage?.message_id}-${message.message_id}` },
+            { text: "✍🏻 ویرایش پیام", callback_data: `edit_message_${forwardedMessage?.message_id}` }
           ]
-        },
-        reply_parameters: {
-          message_id: message.message_id
-        }
-      });
+        ]
+      },
+      reply_parameters: {
+        message_id: message.message_id
+      }
+    });
 
     return forwardedMessage;
   } catch (e: any) {

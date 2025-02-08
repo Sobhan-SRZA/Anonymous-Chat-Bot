@@ -12,7 +12,7 @@ export default async function updateInlineKeyboard(callbackQuery: CtxCallbackQue
   for (let i = 0; i < keyboard.length; i++)
     for (let j = 0; j < keyboard[i].length; j++) {
       const button = keyboard[i][j] as InlineKeyboardButton.CallbackButton;
-      if (button.callback_data === callbackQuery.data)
+      if (callbackQuery.data === button.callback_data)
         keyboard[i][j] = buttonData;
 
     }
@@ -20,7 +20,6 @@ export default async function updateInlineKeyboard(callbackQuery: CtxCallbackQue
 
   return keyboard;
 }
-
 /**
  * @copyright
  * Code by Sobhan-SRZA (mr.sinre) | https://github.com/Sobhan-SRZA

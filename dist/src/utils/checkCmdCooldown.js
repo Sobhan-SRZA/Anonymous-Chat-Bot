@@ -24,12 +24,11 @@ async function checkCmdCooldown(message, command) {
         setTimeout(async () => {
             timestamps.delete(userId);
             try {
-                if (msg && msg.text) {
-                    await __1.default.telegram.deleteMessage(message.chat.id, message.msgId);
-                    await __1.default.telegram.deleteMessage(message.chat.id, msg.message_id);
-                }
+                if (msg)
+                    return await message.telegram.deleteMessages(message.chat.id, [message.msgId, msg.message_id]);
             }
             catch { }
+            return;
         }, cooldownAmount);
         return false;
     }

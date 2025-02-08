@@ -12,14 +12,42 @@ const command: CommandType = {
   only_privet: true,
   run: async (client, ctx) => {
     try {
-      const userId = ctx.from?.id;
+      const
+        userId = ctx.from?.id,
+        isHasActiveChat = await client.activeChats.has(`${userId}`);
+
       if (!userId)
         return;
 
       await cleanupUser(client, userId);
+
+      if (isHasActiveChat)
+        return await ctx.reply(
+          "چت شما خاتمه یافت.",
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+                ]
+              ]
+            },
+            reply_parameters: { message_id: ctx.msgId }
+          }
+        );
+
       return await ctx.reply(
-        "چت شما خاتمه یافت. برای شروع چت جدید از دستورات /anon یا /random استفاده کنید.",
-        { reply_parameters: { message_id: ctx.msgId } }
+        "چتی برای خاتمه دادن وجود ندارد :)",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+              ]
+            ]
+          },
+          reply_parameters: { message_id: ctx.msgId }
+        }
       );
     } catch (e: any) {
       error(e)

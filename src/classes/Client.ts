@@ -1,9 +1,11 @@
-import { session, Telegraf } from "telegraf";
+import { Scenes, session, Telegraf } from "telegraf";
 import { Collection } from "./Collection";
 import { MyContext } from "../types/MessageContext";
+import { message } from "telegraf/filters";
 import { QuickDB } from "quick.db";
 import CommandType, { Categories } from "../types/command";
 import config from "../../config";
+import allScenceStages from "../utils/allScenceStages";
 
 export default class TelegramClient extends Telegraf<MyContext> {
     commands: Collection<string, CommandType>;
@@ -12,8 +14,9 @@ export default class TelegramClient extends Telegraf<MyContext> {
     db: QuickDB | null;
 
     // Anonymous chat variuables  
-    activeChats: Collection<number, number>;
-    chatMessages: Collection<number, number[]>
+    activeChats: QuickDB<number>;
+    chatMessages: QuickDB<number[][]>;
+    blocks: QuickDB<number[]>;
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);
@@ -25,15 +28,21 @@ export default class TelegramClient extends Telegraf<MyContext> {
         // Add session
         this.use(session());
         this.use((ctx, next) => {
-            if (ctx.session === undefined) {
-                ctx.session = {};
-            }
+            if (ctx.session === undefined)
+                ctx.session = {
+                    __scenes: {
+                        lastMessage: new Collection()
+                    }
+                };
+
             return next();
         });
 
-        // Anonymous chat variuables  
-        this.activeChats = new Collection();
-        this.chatMessages = new Collection();
+        // Add scenes stages to middleware
+        const stage = new Scenes.Stage(
+            allScenceStages
+        );
+        this.use(stage.middleware());
     }
 
     cmds_info_list_str(category_name: Categories) {

@@ -35,6 +35,10 @@ exports.default = async (client) => {
         const db = new quick_db_1.QuickDB({ driver });
         await db.init();
         client.db = db;
+        // Anonymous chat variuables  
+        client.activeChats = client.db.table("activeChats");
+        client.chatMessages = client.db.table("chatMessages");
+        client.blocks = client.db.table("blocks");
         (0, post_1.default)(`Database Is Successfully Activated!! (Type: ${config_1.default.source.database.type.toLocaleUpperCase()})`, "S");
     }
     catch (e) {

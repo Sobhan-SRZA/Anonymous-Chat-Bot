@@ -1,9 +1,9 @@
-import { MaybeInaccessibleMessage, User } from "telegraf/typings/core/types/typegram";
-import { Context } from "telegraf";
+import { MaybeInaccessibleMessage, Update, User } from "telegraf/typings/core/types/typegram";
+import { Context, Scenes } from "telegraf";
 import { Collection } from "../classes/Collection";
 
 // Custom session
-interface MySession {
+interface MySession extends Scenes.SceneSessionData {
     lastMessage?: Collection<number, {
         text: string | undefined;
         chat: {
@@ -15,14 +15,12 @@ interface MySession {
             username: string | undefined
         };
         message_id: number | undefined;
-        to?:number;
+        to?: number;
     }>;
 }
 
 // Custom telegraf context
-interface MyContext extends Context {
-    session: MySession;
-}
+interface MyContext extends Context, Scenes.SceneContext<MySession> { }
 
 // Rewrite the type by myself
 interface CtxCallbackQuery {
