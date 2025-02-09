@@ -220,16 +220,14 @@ const event: EventType = {
                 // Blocks List
                 case "blocked_list": {
                     const getBlocks = await client.blocks.get(`${userId}`);
-
                     if (!getBlocks || getBlocks.length < 1)
                         return await ctx.answerCbQuery("شما کسی را تا به حال مسدود نکرده اید.")
 
                     const inline_keyboard: InlineKeyboardButton[][] = getBlocks.map(async a => {
                         const getCode = await getOrCreateReferralCode(db, a.id);
-                        return [
-                            {
-                                text: `${new Date(a.date).toString()} - ${a.messsage_text}`, callback_data: `show_block_${getCode}`
-                            }
+                        return [{
+                            text: `${new Date(a.date).toString()} - ${a.messsage_text}`, callback_data: `show_block_${getCode}`
+                        }
                         ];
                     }) as any;
                     inline_keyboard.push([
