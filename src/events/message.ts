@@ -79,8 +79,8 @@ const event: EventType = {
         partnerId = await client.activeChats.get(`${userId}`),
         chatMessages = await client.chatMessages.get(`${userId}.${partnerId}`);
 
-      if (partnerId && !chatMessages) {
-        const forwardedMessage = await forwardMessageToPartner(message, partnerId);
+      if (partnerId || chatMessages) {
+        const forwardedMessage = await forwardMessageToPartner(message, partnerId!);
         await client.chatMessages.push(`${userId}.${partnerId}`, [message.msgId, forwardedMessage.message_id]);
         return;
       }

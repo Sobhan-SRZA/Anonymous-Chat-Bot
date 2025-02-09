@@ -77,53 +77,70 @@ const main = async () => {
         post((String(amount)).cyan + " Handler Is Loaded!!".green, "S");
         if (client.config.bot.token)
             await client
-                .launch(async () => {
-                    post(
-                        "Telegram bot is online!".blue + `\n` +
-                        "@" + client.botInfo!.username.cyan + " is now online :)".green,
-                        "S"
-                    );
-                    logger(
-                        "Commands: ".blue +
-                        `${client.commands.size}`.cyan + `\n` +
-                        "Telegraf.js: ".blue +
-                        `v${packageJSON.dependencies.telegraf.replace("^", "")}`.cyan + `\n` +
-                        "Node.js: ".blue +
-                        `${process.version}`.cyan + `\n` +
-                        "Plattform: ".blue +
-                        `${process.platform} ${process.arch} | ${os.cpus().map((i) => `${i.model}`)[0]} | ${String(os.loadavg()[0])}%`.cyan + `\n` +
-                        "Memory: ".blue +
-                        `${Math.round(
-                            +((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(2)
-                        )
-                            .toLocaleString()
-                            }/${Math.round(
-                                +((os.totalmem()) / 1024 / 1024).toFixed(2)
+                .launch(
+                    {
+                        allowedUpdates: [
+                            "message",
+                            "message_reaction",
+                            "message_reaction_count",
+                            "edited_message",
+                            "callback_query"
+                        ],
+                        dropPendingUpdates: true
+                    },
+                    async () => {
+                        post(
+                            "Telegram bot is online!".blue + `\n` +
+                            "@" + client.botInfo!.username.cyan + " is now online :)".green,
+                            "S"
+                        );
+                        logger(
+                            "Commands: ".blue +
+                            `${client.commands.size}`.cyan + `\n` +
+                            "Telegraf.js: ".blue +
+                            `v${packageJSON.dependencies.telegraf.replace("^", "")}`.cyan + `\n` +
+                            "Node.js: ".blue +
+                            `${process.version}`.cyan + `\n` +
+                            "Plattform: ".blue +
+                            `${process.platform} ${process.arch} | ${os.cpus().map((i) => `${i.model}`)[0]} | ${String(os.loadavg()[0])}%`.cyan + `\n` +
+                            "Memory: ".blue +
+                            `${Math.round(
+                                +((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(2)
                             )
                                 .toLocaleString()
-                            } MB | ${(
-                                (
-                                    (os.totalmem() - os.freemem()) / os.totalmem()
-                                ) * 100)
-                                .toFixed(2)
-                            }%`.cyan
-                    );
+                                }/${Math.round(
+                                    +((os.totalmem()) / 1024 / 1024).toFixed(2)
+                                )
+                                    .toLocaleString()
+                                } MB | ${(
+                                    (
+                                        (os.totalmem() - os.freemem()) / os.totalmem()
+                                    ) * 100)
+                                    .toFixed(2)
+                                }%`.cyan
+                        );
 
-                    // Upload commands to the button menu.
-                    const commands = client.commands.map(
-                        a => {
-                            return {
-                                command: a.data.name.slice(0, 31),
-                                description: a.data.description.slice(0, 255)
+                        // Upload commands to the button menu.
+                        const commands = client.commands.map(
+                            a => {
+                                return {
+                                    command: a.data.name.slice(0, 31),
+                                    description: a.data.description.slice(0, 255)
+                                }
                             }
-                        }
-                    );
-                    await client.telegram.setMyCommands(
-                        commands
-                    )
-                })
-                .catch(e => {
+                        );
+                        await client.telegram.setMyCommands(
+                            commands
+                        )
+                    }
+                )
+
+
+                .catch((e: any) => {
                     post("Something when bot is loading went wrong!", "E", "red", "red");
+                    if (e?.message?.includes("reason: connect ETIMEDOUT"))
+                        post("Your IP is blocked from telegram servers :/", "E", "red", "red");
+
                     error(e);
                 });
 

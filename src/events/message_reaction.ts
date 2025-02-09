@@ -1,6 +1,6 @@
+import { ReactionType, Update } from "telegraf/typings/core/types/typegram";
 import { NarrowedContext } from "telegraf";
 import { MyContext } from "../types/MessageContext";
-import { ReactionType, Update } from "telegraf/typings/core/types/typegram";
 import EventType from "../types/EventType";
 import error from "../utils/error";
 
@@ -8,44 +8,25 @@ const event: EventType = {
   name: "message_reaction",
   run: async (client, ctx: NarrowedContext<MyContext, Update.MessageReactionUpdate>) => {
     try {
-      console.log(ctx);
       const
-        userId = ctx.from!.id;
-
-      const reactionData: { message_id: number, reaction: ReactionType } = (ctx.update as any).message_reaction;
-      if (!reactionData)
-        return;
-
-      const originalMsgId = reactionData.message_id;
-      if (!userId)
-        return;
-
-      const partnerId = await client.activeChats.get(`${userId}`);
-      if (!partnerId)
-        return;
-
-      const
+        userId = ctx.update?.message_reaction?.user?.id,
+        reactionData = ctx.update.message_reaction,
+        originalMsgId = reactionData.message_id,
+        partnerId = await client.activeChats.get(`${userId}`),
         mappingKey = `${userId}.${partnerId}`,
-        mappings = await client.chatMessages.get(mappingKey);
+        mappings = await client.chatMessages.get(mappingKey),
+        forwardedMsgId = mappings?.find(a => a[0] === originalMsgId);
 
-      if (!mappings)
-        return;
-
-      let forwardedMsgId = mappings.find(a => a[0] === originalMsgId);
-      if (!forwardedMsgId)
+      if (!userId || !reactionData || !partnerId || !mappings || !forwardedMsgId)
         return;
 
       try {
         await ctx.telegram.setMessageReaction(
           partnerId,
           forwardedMsgId[1],
-          [
-            reactionData.reaction
-          ]
+          reactionData.new_reaction
         );
-      } catch (e) {
-        console.error("خطا در انتقال واکنش به پیام شریک:", e);
-      }
+      } catch { }
     } catch (e: any) {
       error(e);
     }

@@ -67,7 +67,16 @@ const main = async () => {
         (0, post_1.default)((String(amount)).cyan + " Handler Is Loaded!!".green, "S");
         if (client.config.bot.token)
             await client
-                .launch(async () => {
+                .launch({
+                allowedUpdates: [
+                    "message",
+                    "message_reaction",
+                    "message_reaction_count",
+                    "edited_message",
+                    "callback_query"
+                ],
+                dropPendingUpdates: true
+            }, async () => {
                 (0, post_1.default)("Telegram bot is online!".blue + `\n` +
                     "@" + client.botInfo.username.cyan + " is now online :)".green, "S");
                 (0, logger_1.default)("Commands: ".blue +
@@ -92,8 +101,10 @@ const main = async () => {
                 });
                 await client.telegram.setMyCommands(commands);
             })
-                .catch(e => {
+                .catch((e) => {
                 (0, post_1.default)("Something when bot is loading went wrong!", "E", "red", "red");
+                if (e?.message?.includes("reason: connect ETIMEDOUT"))
+                    (0, post_1.default)("Your IP is blocked from telegram servers :/", "E", "red", "red");
                 (0, error_1.default)(e);
             });
         else

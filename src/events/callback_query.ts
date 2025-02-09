@@ -217,6 +217,32 @@ const event: EventType = {
                     return;
                 }
 
+                // Blocks List
+                case "blocked_list": {
+                    const getBlocks = await client.blocks.get(`${userId}`);
+
+                    if (!getBlocks || getBlocks.length < 1)
+                        return await ctx.answerCbQuery("شما کسی را تا به حال مسدود نکرده اید.")
+
+                    const inline_keyboard: InlineKeyboardButton[][] = getBlocks.map(async a => {
+                        const getCode = await getOrCreateReferralCode(db, a.id);
+                        return [
+                            {
+                                text: `${new Date(a.date).toString()} - ${a.messsage_text}`, callback_data: `show_block_${getCode}`
+                            }
+                        ];
+                    }) as any;
+                    inline_keyboard.push([
+                        { text: "بازگشت ↩", callback_data: "setting" }
+                    ]);
+                    return await ctx.editMessageText(markdownToHtml("**لیست مسدود شده ها:**"), {
+                        reply_markup: {
+                            inline_keyboard
+                        }
+                    })
+                }
+
+                // Start button
                 case "return_start": {
                     await ctx.answerCbQuery("بازگشت به منوی شروع");
                     return await ctx.editMessageText("چه کاری برات انجام بدم؟", { reply_markup: startMessageButtons });
@@ -311,7 +337,7 @@ const event: EventType = {
                         await client.telegram.editMessageText(
                             msg.chat.id,
                             msg.message_id,
-                            ctx.inlineMessageId,
+                            undefined,
                             `شما با یک کاربر ناشناس ${gender ? `با جنسیت ${gender} ` : ""}جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید.`
                         );
                         if (partnerProfile)
@@ -342,7 +368,7 @@ const event: EventType = {
                             return await client.telegram.editMessageText(
                                 msg.chat.id,
                                 msg.message_id,
-                                ctx.inlineMessageId,
+                                undefined,
                                 "متاسفانه پیام به کاربر مقابل ارسال نشد."
                             );
                         }
@@ -352,7 +378,7 @@ const event: EventType = {
                         return await client.telegram.editMessageText(
                             msg.chat.id,
                             msg.message_id,
-                            ctx.inlineMessageId,
+                            undefined,
                             "متاسفانه کاربری که اخیرا آنلاین باشد یافت نشد."
                         );
                 }
@@ -449,6 +475,7 @@ const event: EventType = {
                     getPartnerCode = callback_data.replace("delete_messages_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
                     userMessageDB = `${userId}.${partnerId}`,
+                    partnerMessageDB = `${partnerId}.${userId}`,
                     userMessages = await client.chatMessages.get(userMessageDB),
                     partnerMessages = userMessages?.map(a => a[1])!;
 
@@ -461,6 +488,7 @@ const event: EventType = {
                     await ctx.telegram.deleteMessages(partnerId, partnerMessages);
                     await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0]));
                     await client.chatMessages.delete(userMessageDB);
+                    await client.chatMessages.delete(partnerMessageDB);
                     await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
                 } catch {
                     await ctx.answerCbQuery("خطایی پیش آمد.");
@@ -573,33 +601,46 @@ const event: EventType = {
                 return;
             }
 
-            // Anonymous chat delete conversion
+            // Block anonymous user block
             if (callback_data.startsWith("block_")) {
                 const
                     getPartnerCode = callback_data.replace("block_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
-                    userMessageDB = `${userId}.${partnerId}`,
-                    userMessages = await client.chatMessages.get(userMessageDB),
-                    partnerMessages = userMessages?.map(a => a[1])!;
+                    databaseName = `${userId}`,
+                    getBlocks = await client.blocks.get(databaseName);
 
-                if (!userMessages) {
-                    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-                    return await ctx.answerCbQuery("تاریخچه چت قبلا پاکسازی شده است.");
-                }
+                if (getBlocks?.some(a => a.id === partnerId))
+                    return await ctx.answerCbQuery("کاربر مسدود هست.")
 
-                try {
-                    await ctx.telegram.deleteMessages(partnerId, partnerMessages);
-                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0]));
-                    await client.chatMessages.delete(userMessageDB);
+                await client.blocks.push(databaseName, {
+                    id: partnerId,
+                    message_id: ctx.msgId,
+                    message_text: ctx.text,
+                    date: Date.now()
+                });
 
-                    await ctx.answerCbQuery("تاریخچه ");
-                } catch {
-                    await ctx.answerCbQuery("خطایی پیش آمد.");
-                }
-                await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
-                return await ctx.reply("تاریخچه چت با موفقیت پاک شد.", {
+                await ctx.answerCbQuery("کاربر مسدود شد.")
+                return await ctx.reply("کاربربا موفقیت مسدود شد✅", {
                     reply_parameters: {
                         message_id: ctx.msgId!
+                    }
+                })
+            }
+
+            // Block list
+            if (callback_data.startsWith("show_block_")) {
+                const
+                    [getPartnerCode] = callback_data.replace("show_block_", ""),
+                    partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
+                    getUser = (await client.blocks.get(`${userId}`))?.find(a => a.id === partnerId);
+
+                if (!getUser || !partnerId)
+                    return await ctx.answerCbQuery("کاربر یافت نشد.")
+
+                await ctx.answerCbQuery("کاربر یافت شد.")
+                return await ctx.reply(`کاربر با دلیل رو به رو مسدود شده است: ${getUser.messsage_text}`, {
+                    reply_parameters: {
+                        message_id: getUser.message_id
                     }
                 })
             }
