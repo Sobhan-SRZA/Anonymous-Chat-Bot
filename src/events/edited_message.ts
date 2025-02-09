@@ -1,6 +1,6 @@
+import { Message, Update } from "telegraf/typings/core/types/typegram";
 import { NarrowedContext } from "telegraf";
 import { MyContext } from "../types/MessageContext";
-import { Message, Update } from "telegraf/typings/core/types/typegram";
 import EventType from "../types/EventType";
 import error from "../utils/error";
 
@@ -8,45 +8,37 @@ const event: EventType = {
   name: "edited_message",
   run: async (client, ctx: NarrowedContext<MyContext, Update.MessageReactionUpdate>) => {
     try {
-      console.log(ctx);
-      const
-        userId = ctx.from!.id,
-        editedMsg = ctx.editedMessage! as Message.TextMessage;
+      //   const
+      //     userId = ctx.from!.id,
+      //     editedMsg = ctx.editedMessage! as Message.TextMessage,
+      //     originalMsgId = editedMsg.message_id,
+      //     partnerId = await client.activeChats.get(`${userId}`),
+      //     mappingKey = `${userId}.${partnerId}`,
+      //     mappings = await client.chatMessages.get(mappingKey),
+      //     forwardedMsgId = mappings?.find(a => a[0] === originalMsgId);
 
-      if (!editedMsg)
-        return;
+      //   if (!userId || !editedMsg || !partnerId || !mappings || !forwardedMsgId)
+      //     return;
 
-      const originalMsgId = editedMsg.message_id;
-      if (!userId)
-        return;
+      //   try {
+      //     const originalMessage = await ctx.telegram.getMessage(
+      //       partnerId,
+      //       forwardedMsgId[1]
+      //     );
 
-      const partnerId = await client.activeChats.get(`${userId}`);
-      if (!partnerId)
-        return;
+      //     if (editedMsg.text) {
+      //       await ctx.telegram.editMessageText(
+      //         partnerId,
+      //         forwardedMsgId[1],
+      //         undefined,
+      //         editedMsg.text,
+      //         {
+      //           reply_markup: originalMessage?.reply_markup
+      //         }
+      //       );
+      //     }
 
-      const
-        mappingKey = `${userId}.${partnerId}`,
-        mappings = await client.chatMessages.get(mappingKey);
-
-      if (!mappings)
-        return;
-
-      let forwardedMsgId = mappings.find(a => a[0] === originalMsgId);
-      if (!forwardedMsgId)
-        return;
-
-      try {
-        if (editedMsg.text)
-          await ctx.telegram.editMessageText(
-            partnerId,
-            forwardedMsgId[1],
-            undefined,
-            editedMsg.text
-          );
-
-      } catch (e) {
-        console.error("خطا در ویرایش پیام در چت شریک:", e);
-      }
+      //   } catch { }
     } catch (e: any) {
       error(e);
     }

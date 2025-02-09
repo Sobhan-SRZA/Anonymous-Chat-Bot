@@ -24,7 +24,7 @@ const
       await client.telegram.editMessageText(
         partnerId,
         messageId,
-        ctx.inlineMessageId,
+        undefined,
         markdownToHtml(ctx.text!),
         {
           parse_mode: "HTML"
@@ -33,7 +33,7 @@ const
       await client.telegram.editMessageText(
         lastMessage.chat.id,
         lastMessage.message_id,
-        ctx.inlineMessageId,
+        undefined,
         markdownToHtml("پیغام شما ویرایش شد ✅"),
         {
           parse_mode: "HTML"
@@ -59,7 +59,9 @@ const
 
       await client.chatMessages.push(`${userId}.${partnerId}`, [ctx.msgId, forwardedMessage.message_id]);
       await client.telegram.editMessageText(
-        lastMessage.chat.id, lastMessage.message_id, ctx.inlineMessageId,
+        lastMessage.chat.id,
+        lastMessage.message_id,
+        undefined,
         markdownToHtml("پیغام شما ارسال شد ✅"),
         {
           parse_mode: "HTML"
@@ -89,7 +91,9 @@ const
       profile.welcome_message = ctx.text;
       await setUserProfile(db, userId, profile);
       await client.telegram.editMessageText(
-        lastMessage.chat.id, lastMessage.message_id, ctx.inlineMessageId,
+        lastMessage.chat.id,
+        lastMessage.message_id,
+        undefined,
         markdownToHtml(`پیغام خوش آمد گویی شما با موفقیت تغییر یافت✔\nپیغام خوش آمد گویی شما:\`\`\`\n${profile.welcome_message}\n\`\`\``),
         {
           parse_mode: "HTML",
@@ -124,7 +128,9 @@ const
       profile.nickname = ctx.text;
       await setUserProfile(db, userId, profile);
       await client.telegram.editMessageText(
-        lastMessage.chat.id, lastMessage.message_id, ctx.inlineMessageId,
+        lastMessage.chat.id,
+        lastMessage.message_id,
+        undefined,
         markdownToHtml(`نام نمایشی شما با موفقیت تغییر یافت✔\nنام نمایشی شما:\`\`\`\n${profile.nickname}\n\`\`\``),
         {
           parse_mode: "HTML",

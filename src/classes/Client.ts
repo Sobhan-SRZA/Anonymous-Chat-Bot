@@ -16,7 +16,7 @@ export default class TelegramClient extends Telegraf<MyContext> {
     // Anonymous chat variuables  
     activeChats: QuickDB<number>;
     chatMessages: QuickDB<number[][]>;
-    blocks: QuickDB<number[]>;
+    blocks: QuickDB<{ id: number, message_id: number, messsage_text: string, date: number }[]>;
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);
