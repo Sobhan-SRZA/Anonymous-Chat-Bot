@@ -80,8 +80,11 @@ const event: EventType = {
         chatMessages = await client.chatMessages.get(`${userId}.${partnerId}`);
 
       if (partnerId || chatMessages) {
-        const forwardedMessage = await forwardMessageToPartner(message, partnerId!);
-        await client.chatMessages.push(`${userId}.${partnerId}`, [message.msgId, forwardedMessage.message_id]);
+        const forwardedMessage = (await forwardMessageToPartner(message, partnerId!))!;
+        await client.chatMessages.push(`${userId}.${partnerId}`, [
+          { message_id: message.msgId, control_message_id: forwardedMessage.control_message_id },
+          { message_id: forwardedMessage.message_id, reply_markup: forwardedMessage.reply_markup }
+        ]);
         return;
       }
 

@@ -1,5 +1,5 @@
 import { getToggleButton, PermissionNames, permissionsInfo, permissionsMapping, UserGender } from "../types/UserProfile";
-import { CallbackQuery, Update, Message, InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
+import { CallbackQuery, Update, Message, InlineKeyboardButton, InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 import { CtxCallbackQuery, MyContext } from "../types/MessageContext";
 import { startMessageButtons } from "../utils/startMessage";
 import { readFileSync } from "fs";
@@ -12,6 +12,7 @@ import getRecentlyActiveUsers from "../utils/getRecentlyActiveUsers";
 import updateInlineKeyboard from "../utils/updateInlineKeyBoard";
 import generateReferralLink from "../utils/generateReferralLink";
 import updateUserLastSeen from "../utils/updateUserLastSeen";
+import checkUserIsBlock from "../utils/checkUserIsBlock";
 import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
 import setUserProfile from "../utils/setUserProfile";
@@ -57,15 +58,6 @@ const event: EventType = {
             // Set last activity
             await updateUserLastSeen(db, userId);
 
-            // Set gender 
-            if (callback_data.startsWith("set_gender_")) {
-                const gender = callback_data.replace("set_gender_", "") as UserGender;
-                profile.gender = gender;
-                await setUserProfile(db, userId, profile);
-                await ctx.answerCbQuery("پروفایل شما به‌روزرسانی شد!");
-                return await ctx.editMessageText(`پروفایل شما تنظیم شد: جنسیت شما ${gender} است.`);
-            }
-
             switch (callback_data) {
 
                 // Start Buttons
@@ -92,6 +84,7 @@ const event: EventType = {
                         await setUserProfile(db, userId, profile);
                     }
 
+                    inline_keyboard.push([{ text: "تغییر جنسیت 🚻", callback_data: "change_gender" }]);
                     inline_keyboard.push([{ text: "تغییر نام نمایشی 👤", callback_data: "change_nickname" }]);
                     inline_keyboard.push([{ text: "پیام خوش آمدگویی 👋🏻", callback_data: "change_welcome_message" }]);
                     for (const permissionKey in permissionsMapping) {
@@ -115,6 +108,30 @@ const event: EventType = {
                 }
 
                 // Setting buttons
+
+                // Change gender
+                case "change_gender": {
+                    await ctx.answerCbQuery("تغییر جنسیت")
+                    return await ctx.editMessageText(
+                        "لطفاً جنسیت خود را انتخاب کنید:",
+                        {
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [
+                                        { text: "Male", callback_data: "set_gender_male" },
+                                        { text: "Female", callback_data: "set_gender_female" },
+                                        { text: "Other", callback_data: "set_gender_other" }
+                                    ],
+                                    [
+                                        { text: "بازگشت ↩", callback_data: "setting" }
+                                    ]
+                                ]
+                            }
+                        }
+                    )
+                }
+
+                // Manage nickname
                 case "delete_nickname":
                 case "change_nickname": {
                     if (callback_data === "delete_nickname") {
@@ -166,6 +183,7 @@ const event: EventType = {
                     return;
                 }
 
+                // Manage welcome message
                 case "delete_welcome_message":
                 case "change_welcome_message": {
                     if (callback_data === "delete_welcome_message") {
@@ -220,25 +238,24 @@ const event: EventType = {
                 // Blocks List
                 case "blocked_list": {
                     const getBlocks = await client.blocks.get(`${userId}`);
-
                     if (!getBlocks || getBlocks.length < 1)
                         return await ctx.answerCbQuery("شما کسی را تا به حال مسدود نکرده اید.")
 
-                    const inline_keyboard: InlineKeyboardButton[][] = getBlocks.map(async a => {
-                        const getCode = await getOrCreateReferralCode(db, a.id);
-                        return [
-                            {
-                                text: `${new Date(a.date).toString()} - ${a.messsage_text}`, callback_data: `show_block_${getCode}`
-                            }
-                        ];
-                    }) as any;
-                    inline_keyboard.push([
+                    const reply_markup: InlineKeyboardMarkup = {
+                        inline_keyboard: getBlocks.map(a => {
+                            return [
+                                {
+                                    text: `${new Date(a.date).toUTCString()} - ${a.messsage_text}`, callback_data: `show_block_${a.message_id}`
+                                }
+                            ];
+                        })
+                    };
+                    reply_markup.inline_keyboard.push([
                         { text: "بازگشت ↩", callback_data: "setting" }
                     ]);
                     return await ctx.editMessageText(markdownToHtml("**لیست مسدود شده ها:**"), {
-                        reply_markup: {
-                            inline_keyboard
-                        }
+                        parse_mode: "HTML",
+                        reply_markup
                     })
                 }
 
@@ -286,7 +303,7 @@ const event: EventType = {
                     });
                 }
 
-                // Anonymous chat
+                // Anonymous chat information 
                 case "anonymous_chat": {
                     return await ctx.editMessageText(readFileSync("./storage/AnonymousChatText.txt").toString(), {
                         parse_mode: "HTML",
@@ -311,13 +328,8 @@ const event: EventType = {
                 case "anonymous_chat_male":
                 case "anonymous_chat_female":
                 case "anonymous_chat_random": {
-                    const
-                        msg = await ctx.reply(
-                            `در انتظار یافتن شریک چت هستیم...`,
-                            { reply_parameters: { message_id: ctx.msgId! } }
-                        ),
-                        gender = callback_data.endsWith("_female") || callback_data.endsWith("_male") ? callback_data.replace("anonymous_chat_", "") : null;
-
+                    await ctx.answerCbQuery("در انتظار یافتن شریک چت هستیم...");
+                    const gender = callback_data.endsWith("_female") || callback_data.endsWith("_male") ? callback_data.replace("anonymous_chat_", "") : null;
                     let getActiveUsers = await getRecentlyActiveUsers(db);
 
                     getActiveUsers = getActiveUsers.filter(a => a.id !== callbackQuery.from.id);
@@ -326,29 +338,39 @@ const event: EventType = {
 
                     const getRandomActiveUser = chooseRandom(getActiveUsers);
                     if (getActiveUsers.length > 0) {
+                        const partnerId = getRandomActiveUser.id!;
+                        if (await checkUserIsBlock(
+                            client,
+                            ctx,
+                            userId,
+                            +partnerId,
+                            async (ctx) => await ctx.reply("کاربر توسط شما مسدود است :(\nلطفا دوباره تلاش کنید."),
+                            async (ctx) => await ctx.reply("شما توسط کاربر مسدود هستید :(\nلطفا دوباره تلاش کنید.")
+                        ))
+                            return;
+
                         const
-                            partnerId = getRandomActiveUser.id!,
                             partnerProfile = await getUserProfile(db, partnerId),
                             getUserCode = await getOrCreateReferralCode(db, userId),
                             getPartnerCode = await getOrCreateReferralCode(db, partnerId);
 
                         await client.activeChats.set(`${userId}`, partnerId);
                         await client.activeChats.set(`${partnerId}`, userId);
-                        await client.telegram.editMessageText(
-                            msg.chat.id,
-                            msg.message_id,
-                            undefined,
-                            `شما با یک کاربر ناشناس ${gender ? `با جنسیت ${gender} ` : ""}جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید.`
+                        await ctx.reply(
+                            markdownToHtml(`شما با یک کاربر ناشناس ${gender ? `با جنسیت ${gender} ` : ""}جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید.`),
+                            {
+                                parse_mode: "HTML",
+                                reply_parameters: { message_id: ctx.msgId! }
+                            }
                         );
                         if (partnerProfile)
                             await ctx.reply(markdownToHtml(`شما با کاربر **${partnerProfile.nickname || `User_${getPartnerCode}`}** جفت شده اید.${"\n\n" + (partnerProfile.welcome_message || "")}`), {
-                                parse_mode: "HTML",
-                                reply_parameters: { message_id: msg.message_id }
+                                parse_mode: "HTML"
                             })
 
                         try {
 
-                            const msg = await client.telegram.sendMessage(
+                            await client.telegram.sendMessage(
                                 partnerId,
                                 "شما با یک کاربر ناشناس جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید."
                             );
@@ -357,30 +379,19 @@ const event: EventType = {
                                     partnerId,
                                     markdownToHtml(`شما با کاربر **${profile.nickname || `User_${getUserCode}`}** جفت شده اید.${"\n\n" + (profile.welcome_message || "")}`),
                                     {
-                                        parse_mode: "HTML",
-                                        reply_parameters: { message_id: msg.message_id }
+                                        parse_mode: "HTML"
                                     }
                                 );
 
                             return;
                         } catch {
                             await cleanupUser(client, userId);
-                            return await client.telegram.editMessageText(
-                                msg.chat.id,
-                                msg.message_id,
-                                undefined,
-                                "متاسفانه پیام به کاربر مقابل ارسال نشد."
-                            );
+                            return await ctx.reply("متاسفانه پیام به کاربر مقابل ارسال نشد.");
                         }
                     }
 
                     else
-                        return await client.telegram.editMessageText(
-                            msg.chat.id,
-                            msg.message_id,
-                            undefined,
-                            "متاسفانه کاربری که اخیرا آنلاین باشد یافت نشد."
-                        );
+                        return await ctx.reply("متاسفانه کاربری که اخیرا آنلاین باشد یافت نشد.");
                 }
 
                 // Cancel sending message
@@ -391,6 +402,58 @@ const event: EventType = {
                     await ctx.scene.leave();
                     return;
                 }
+
+                // Get user code
+                case "found_user": {
+                    await ctx.answerCbQuery("دریافت لینک ناشناس کاربر");
+                    const msg = await ctx.reply(
+                        markdownToHtml("برای دریافت لینک ناشناس کاربر یکی از گزینه های زیر را ارسال کنید:\n**🆔 UserName: `@username`\n🔗 UserLink: `t.me/username`\n🔢 UserID: [`123456789`](https://t.me/@userdatailsbot)\n\n📌 اگه هیچ کدوم در دسترس نبود یه پیام ازش فوروارد کن!"),
+                        {
+                            parse_mode: "HTML",
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [
+                                        { text: "انصراف", callback_data: "cancel_sending" }
+                                    ]
+                                ]
+                            },
+                            reply_parameters: {
+                                message_id: ctx.msgId!
+                            }
+                        }
+                    ) as Update.Edited & Message.TextMessage;
+
+                    // Set last message to answer  
+                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
+                        text: msg.text,
+                        message_id: msg.message_id,
+                        chat: {
+                            id: msg.chat.id,
+                            type: msg.chat.type
+                        },
+                        from: {
+                            id: msg.from!.id,
+                            username: msg.from!.username
+                        }
+                    });
+
+                    await ctx.scene.enter("found_user");
+                    return;
+                }
+            }
+
+
+            // Set gender 
+            if (callback_data.startsWith("set_gender_")) {
+                const gender = callback_data.replace("set_gender_", "") as UserGender;
+                try {
+                    profile.gender = gender;
+                    await setUserProfile(db, userId, profile);
+                } catch {
+                    return await ctx.answerCbQuery("مشکلی پیش آمد لطفا دوباره تلاش کنید :(");
+                }
+                await ctx.answerCbQuery("پروفایل شما به‌روزرسانی شد!");
+                return await ctx.editMessageText(`پروفایل شما تنظیم شد:\n جنسیت شما ${gender} است.`);
             }
 
             // Show permissions information
@@ -445,7 +508,7 @@ const event: EventType = {
                     getPartnerCode = callback_data.replace("end_chat_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!;
 
-                if (!(await client.activeChats.has(`${userId}`))) {
+                if (!(await client.activeChats.has(`${userId}`)) || (await client.activeChats.get(`${userId}`) !== partnerId)) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                     return await ctx.answerCbQuery("چت قبلاً بسته شده است.");
                 }
@@ -476,8 +539,7 @@ const event: EventType = {
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
                     userMessageDB = `${userId}.${partnerId}`,
                     partnerMessageDB = `${partnerId}.${userId}`,
-                    userMessages = await client.chatMessages.get(userMessageDB),
-                    partnerMessages = userMessages?.map(a => a[1])!;
+                    userMessages = await client.chatMessages.get(userMessageDB);
 
                 if (!userMessages) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
@@ -485,8 +547,10 @@ const event: EventType = {
                 }
 
                 try {
-                    await ctx.telegram.deleteMessages(partnerId, partnerMessages);
-                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0]));
+                    await ctx.telegram.deleteMessages(partnerId, userMessages.map(a => a[1].control_message_id!));
+                    await ctx.telegram.deleteMessages(partnerId, userMessages.map(a => a[1].message_id)!);
+                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0].control_message_id!));
+                    await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0].message_id));
                     await client.chatMessages.delete(userMessageDB);
                     await client.chatMessages.delete(partnerMessageDB);
                     await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
@@ -503,12 +567,20 @@ const event: EventType = {
 
             // Anonymous chat delete conversion
             if (callback_data.startsWith("delete_message_")) {
-                const
-                    [forwardMessageId, userMessageId] = callback_data.replace("delete_message_", "").split("-"),
-                    partnerId = (await client.activeChats.get(`${userId}`))!,
-                    inline_keyboard = await deleteClickedInlineKeyBoard(callbackQuery, (button) => {
-                        return button.callback_data !== callbackQuery.data && !button.callback_data.startsWith("edit_message_");
-                    });
+                const [forwardMessageId, userMessageId, partnerId] = callback_data.replace("delete_message_", "").split("-");
+                if (await checkUserIsBlock(
+                    client,
+                    ctx,
+                    userId,
+                    +partnerId,
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | کاربر توسط شما مسدود است."),
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | شما توسط کاربر مسدود هستید.")
+                ))
+                    return;
+
+                const inline_keyboard = await deleteClickedInlineKeyBoard(callbackQuery, (button) => {
+                    return button.callback_data !== callbackQuery.data && !button.callback_data.startsWith("edit_message_");
+                });
 
                 try {
                     await client.telegram.deleteMessage(userId, +userMessageId).catch(null);
@@ -523,24 +595,33 @@ const event: EventType = {
 
             // Anonymous chat edit message
             if (callback_data.startsWith("edit_message_")) {
+                const [messageId, partnerId] = callback_data.replace("edit_message_", "").split("-");
+                if (await checkUserIsBlock(
+                    client,
+                    ctx,
+                    userId,
+                    +partnerId,
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | کاربر توسط شما مسدود است."),
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | شما توسط کاربر مسدود هستید.")
+                ))
+                    return;
+
                 await ctx.answerCbQuery("خیلی خوب، پیام ویرایش شده ی خودتون رو بفرستید.");
-                const
-                    messageId = callback_data.replace("edit_message_", ""),
-                    msg = await ctx.reply(
-                        "پیام خودتون رو ارسال کنید تا برای کاربر ویرایش شود.",
-                        {
-                            reply_markup: {
-                                inline_keyboard: [
-                                    [
-                                        { text: "انصراف", callback_data: "cancel_sending" }
-                                    ]
+                const msg = await ctx.reply(
+                    "پیام خودتون رو ارسال کنید تا برای کاربر ویرایش شود.",
+                    {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: "انصراف", callback_data: "cancel_sending" }
                                 ]
-                            },
-                            reply_parameters: {
-                                message_id: ctx.msgId!
-                            }
+                            ]
+                        },
+                        reply_parameters: {
+                            message_id: ctx.msgId!
                         }
-                    ) as Update.Edited & Message.TextMessage;
+                    }
+                ) as Update.Edited & Message.TextMessage;
 
                 // Set last message to answer  
                 ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
@@ -563,24 +644,33 @@ const event: EventType = {
 
             // Anonymous chat contnue conversion or answer
             if (callback_data.startsWith("continue_chat_") || callback_data.startsWith("answer_")) {
+                const partnerId = (await getUserIdByReferralCode(db, callback_data.replace("continue_chat_", "").replace("answer_", "")))!;
+                if (await checkUserIsBlock(
+                    client,
+                    ctx,
+                    userId,
+                    +partnerId,
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | کاربر توسط شما مسدود است."),
+                    async (ctx) => await ctx.answerCbQuery("ارسال ناموفق | شما توسط کاربر مسدود هستید.")
+                ))
+                    return;
+
                 await ctx.answerCbQuery("خیلی خوب، پیام خودتون رو بفرستید.");
-                const
-                    partnerId = (await getUserIdByReferralCode(db, callback_data.replace("continue_chat_", "").replace("answer_", "")))!,
-                    msg = await ctx.reply(
-                        "پیام خودتون رو ارسال کنید تا برای کاربر ارسال بشه.",
-                        {
-                            reply_markup: {
-                                inline_keyboard: [
-                                    [
-                                        { text: "انصراف", callback_data: "cancel_sending" }
-                                    ]
+                const msg = await ctx.reply(
+                    "پیام خودتون رو ارسال کنید تا برای کاربر ارسال بشه.",
+                    {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: "انصراف", callback_data: "cancel_sending" }
                                 ]
-                            },
-                            reply_parameters: {
-                                message_id: ctx.msgId!
-                            }
+                            ]
+                        },
+                        reply_parameters: {
+                            message_id: ctx.msgId!
                         }
-                    ) as Update.Edited & Message.TextMessage;
+                    }
+                ) as Update.Edited & Message.TextMessage;
 
                 // Set last message to answer  
                 ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
@@ -609,7 +699,7 @@ const event: EventType = {
                     databaseName = `${userId}`,
                     getBlocks = await client.blocks.get(databaseName);
 
-                if (getBlocks?.some(a => a.id === partnerId))
+                if (getBlocks && getBlocks.some(a => a.id === partnerId))
                     return await ctx.answerCbQuery("کاربر مسدود هست.")
 
                 await client.blocks.push(databaseName, {
@@ -620,25 +710,44 @@ const event: EventType = {
                 });
 
                 await ctx.answerCbQuery("کاربر مسدود شد.")
-                return await ctx.reply("کاربربا موفقیت مسدود شد✅", {
+                await ctx.reply("کاربربا موفقیت مسدود شد✅", {
                     reply_parameters: {
                         message_id: ctx.msgId!
                     }
                 })
+
+                if ((await client.activeChats.get(`${userId}`)) === partnerId) {
+                    await client.activeChats.delete(`${userId}`);
+                    await client.activeChats.delete(`${partnerId}`);
+                }
+
+                await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+                return await ctx.reply("حذف تاریخچه چت", {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: "🗑 پاکسازی تاریخچه چت", callback_data: `delete_messages_${getPartnerCode}` }
+                            ]
+                        ]
+                    }
+                });
             }
 
             // Block list
             if (callback_data.startsWith("show_block_")) {
                 const
-                    [getPartnerCode] = callback_data.replace("show_block_", ""),
-                    partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
-                    getUser = (await client.blocks.get(`${userId}`))?.find(a => a.id === partnerId);
+                    message_id = callback_data.replace("show_block_", ""),
+                    blocks = await client.blocks.get(`${userId}`);
 
-                if (!getUser || !partnerId)
+                if (!blocks)
+                    return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
+
+                const getUser = blocks.find(a => a.message_id === +message_id);
+                if (!getUser)
                     return await ctx.answerCbQuery("کاربر یافت نشد.")
 
                 await ctx.answerCbQuery("کاربر یافت شد.")
-                return await ctx.reply(`کاربر با دلیل رو به رو مسدود شده است: ${getUser.messsage_text}`, {
+                return await ctx.reply("کاربر با دلیل بالا مسدود شده است ☝🏻", {
                     reply_parameters: {
                         message_id: getUser.message_id
                     }

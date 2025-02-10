@@ -1,12 +1,16 @@
-import { message } from "telegraf/filters";
+import { MessageOriginUser } from "telegraf/typings/core/types/typegram";
 import { MyContext } from "../types/MessageContext";
+import { message } from "telegraf/filters";
 import { Scenes } from "telegraf";
 import forwardMessageToPartner from "./forwardMessageToPartner";
+import getOrCreateReferralCode from "./getOrCreateReferralCode";
+import getUserIdByUsername from "./getUserIdByUsername";
+import updateUserLastSeen from "./updateUserLastSeen";
+import checkUserIsBlock from "./checkUserIsBlock";
+import setUserProfile from "./setUserProfile";
+import getUserProfile from "./getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
 import client from "../..";
-import getUserProfile from "./getUserProfile";
-import updateUserLastSeen from "./updateUserLastSeen";
-import setUserProfile from "./setUserProfile";
 
 const
   stages: Scenes.BaseScene<MyContext>[] = [],
@@ -55,9 +59,12 @@ const
         userId = ctx.from!.id,
         lastMessage = ctx.session.__scenes!.lastMessage!.get(client.botInfo!.id)!,
         partnerId = lastMessage.to!,
-        forwardedMessage = await forwardMessageToPartner(ctx, partnerId);
+        forwardedMessage = (await forwardMessageToPartner(ctx, partnerId))!;
 
-      await client.chatMessages.push(`${userId}.${partnerId}`, [ctx.msgId, forwardedMessage.message_id]);
+      await client.chatMessages.push(`${userId}.${partnerId}`, [
+        { message_id: ctx.msgId, control_message_id: forwardedMessage.control_message_id },
+        { message_id: forwardedMessage.message_id, reply_markup: forwardedMessage.reply_markup }
+      ]);
       await client.telegram.editMessageText(
         lastMessage.chat.id,
         lastMessage.message_id,
@@ -150,12 +157,116 @@ const
       });
       setTimeout(async () => await client.telegram.deleteMessage(ctx.chat.id, msg.message_id), 5 * 1000);
       return await ctx.scene.leave();
+    }),
+
+  // Found user 
+  found_user = new Scenes.BaseScene<MyContext>("found_user")
+    .enter()
+    .on(message("text"), async ctx => {
+      const
+        db = client.db!,
+        forwarded: MessageOriginUser | undefined = ctx.message.forward_origin as any,
+        lastMessage = ctx.session.__scenes!.lastMessage!.get(client.botInfo!.id)!;
+
+      let userId: number | null = null;
+      if (forwarded)
+        userId = forwarded.sender_user.id;
+
+      else {
+        const
+          text = ctx.text.trim(),
+          userLinkMatch = text.match(/t\.me\/([A-Za-z0-9_]+)/),
+          userIdMatch = text.match(/^(\d{5,})$/),
+          usernameMatch = text.match(/@([A-Za-z0-9_]+)/);
+
+        if (usernameMatch)
+          userId = await getUserIdByUsername(client, usernameMatch[1]);
+
+        else if (userLinkMatch)
+          userId = await getUserIdByUsername(client, userLinkMatch[1]);
+
+        else if (userIdMatch)
+          userId = parseInt(userIdMatch[1]);
+
+      }
+
+      const userProfile = await getUserProfile(db, userId!);
+      if (userId && userProfile) {
+        const
+          userReferralCode = await getOrCreateReferralCode(db, userId),
+          getUserBlocks = await client.blocks.get(`${ctx.from.id}`),
+          getPartnerBlocks = await client.blocks.get(`${userId}`);
+
+        if (getUserBlocks && getUserBlocks.some(a => a.id === userId))
+          return await ctx.answerCbQuery("ارسال ناموفق | کاربر توسط شما مسدود است.");
+
+        else if (getPartnerBlocks && getPartnerBlocks.some(a => a.id === ctx.from.id))
+          return await ctx.answerCbQuery("ارسال ناموفق | شما توسط کاربر مسدود هستید.");
+
+        if (await checkUserIsBlock(
+          client,
+          ctx,
+          ctx.from.id,
+          userId,
+          async () => await client.telegram.editMessageText(
+            lastMessage.chat.id,
+            lastMessage.message_id,
+            undefined,
+            markdownToHtml("کاربر مالک این کد قبلا توسط شما مسدود شده است.\n```\n**برای خارج سازی از مسدودی، از دستور /settings استفاده کنید!**\n```"),
+            {
+              parse_mode: "HTML"
+            }
+          ),
+          async () => await client.telegram.editMessageText(
+            lastMessage.chat.id,
+            lastMessage.message_id,
+            undefined,
+            "شما توسط کاربر مسدود هستید و به همین دلیل نمیتوانید لینک او را دریافت کنید!"
+          )
+        ))
+          return;
+
+        await client.telegram.editMessageText(
+          lastMessage.chat.id,
+          lastMessage.message_id,
+          undefined,
+          markdownToHtml(`👤 لینک ناشناس **${userProfile.nickname || `User_${userReferralCode}`}**\n\n🔗 https://t.me/${encodeURIComponent(client.botInfo!.username)}?start=${encodeURIComponent(userReferralCode)}`),
+          {
+            parse_mode: "HTML"
+          }
+        )
+      }
+
+      else if (!userProfile) {
+        await client.telegram.editMessageText(
+          lastMessage.chat.id,
+          lastMessage.message_id,
+          undefined,
+          "کاربر در ربات پروفایلی ندارد!"
+        )
+      }
+
+      else
+        await client.telegram.editMessageText(
+          lastMessage.chat.id,
+          lastMessage.message_id,
+          undefined,
+          "کاربری با اطلاعاتی که وارد کردید یافت نشد دوباره تلاش کنید!"
+        )
+
+      ctx.session.__scenes!.lastMessage!.delete(client.botInfo!.id)
+      const msg = await ctx.reply("پیامتان دریافت شد.", {
+        reply_parameters: { message_id: ctx.msgId }
+      });
+      setTimeout(async () => await client.telegram.deleteMessage(ctx.chat.id, msg.message_id), 5 * 1000);
+      return await ctx.scene.leave();
     });
 
 stages.push(edit_message);
 stages.push(continue_or_answer_chat);
 stages.push(change_welcome_message);
 stages.push(change_nickname);
+stages.push(found_user);
 export default stages;
 /**
  * @copyright

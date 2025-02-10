@@ -7,11 +7,10 @@ const startMessageButtons: InlineKeyboardMarkup | undefined = {
       { text: "لینک ناشناس من 🔗", callback_data: "my_referral_link" }
     ],
     [
-      { text: "لینک یاب 🔍", callback_data: "found_user_by_link" },
-      { text: "چت با مخاطب خاص 💌", callback_data: "chat_with_spicial_user" }
+      { text: "پشتیبانی ⚒", url: "https://t.me/Sobhan_SRZA" }
     ],
     [
-      { text: "ارتباط با پشتیبانی ⚒", url: "https://t.me/Sobhan_SRZA" },
+      { text: "لینک یاب 🔍", callback_data: "found_user" },
       { text: "راهنما 💡", callback_data: "faq" }
     ],
     [

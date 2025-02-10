@@ -1,3 +1,4 @@
+import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
 import CommandType from "../../types/command";
 import cleanupUser from "../../utils/cleanupUser";
 import error from "../../utils/error";
@@ -14,7 +15,17 @@ const command: CommandType = {
     try {
       const
         userId = ctx.from?.id,
-        isHasActiveChat = await client.activeChats.has(`${userId}`);
+        isHasActiveChat = await client.activeChats.has(`${userId}`),
+        data: ExtraReplyMessage = {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+              ]
+            ]
+          },
+          reply_parameters: { message_id: ctx.msgId }
+        };
 
       if (!userId)
         return;
@@ -24,30 +35,12 @@ const command: CommandType = {
       if (isHasActiveChat)
         return await ctx.reply(
           "چت شما خاتمه یافت.",
-          {
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
-                ]
-              ]
-            },
-            reply_parameters: { message_id: ctx.msgId }
-          }
+          data
         );
 
       return await ctx.reply(
         "چتی برای خاتمه دادن وجود ندارد :)",
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [
-                { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
-              ]
-            ]
-          },
-          reply_parameters: { message_id: ctx.msgId }
-        }
+        data
       );
     } catch (e: any) {
       error(e)

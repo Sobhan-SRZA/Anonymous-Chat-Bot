@@ -1,6 +1,6 @@
+import { InlineKeyboardMarkup, Message } from "telegraf/typings/core/types/typegram";
 import { UserPermissionDescriptions } from "../types/UserProfile";
 import { MyContext } from "../types/MessageContext";
-import { Message } from "telegraf/typings/core/types/typegram";
 import getOrCreateReferralCode from "./getOrCreateReferralCode";
 import getRequiredPermission from "./getRequiredPermission";
 import getUserProfile from "./getUserProfile";
@@ -19,14 +19,15 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
       if (requiredPermission)
         if (!partnerProfile.permissions[requiredPermission]) {
           const description = UserPermissionDescriptions[requiredPermission];
-          return await ctx.reply(`شریک چت اجازه ${description} را ندارد.`);
+          await ctx.reply(`شریک چت اجازه ${description} را ندارد.`);
+          return;
         }
 
     }
 
     const
       message = ctx.message as Message.TextMessage,
-      data: any = {},
+      data: any = { parse_mode: "Markdown" },
       getUserCode = await getOrCreateReferralCode(db, ctx.from!.id),
       getPartnerCode = await getOrCreateReferralCode(db, partnerId),
       userMessageDB = `${ctx.from!.id}.${partnerId}`,
@@ -43,10 +44,10 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
     if (message.reply_to_message) {
       let
         message_id = message.reply_to_message.message_id,
-        partnerMessages = userMessages?.find(a => a[0] === message_id);
+        partnerMessages = userMessages?.find(a => a[0].message_id === message_id);
 
       if (partnerMessages)
-        data.reply_to_message_id = partnerMessages[1];
+        data.reply_to_message_id = partnerMessages[1].message_id;
 
     }
 
@@ -62,12 +63,13 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
         ctx.chat!.id,
         message.message_id,
         {
+          parse_mode: "Markdown",
           reply_markup: data.reply_markup
         }
       )
     });
 
-    await ctx.reply("🔹 کنترل چت:", {
+    const control_message = await ctx.reply("🔹 کنترل چت:", {
       reply_markup: {
         inline_keyboard: [
           [
@@ -75,8 +77,8 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
             { text: "▶️ ادامه چت", callback_data: `continue_chat_${getPartnerCode}` }
           ],
           [
-            { text: "🗑 حذف پیام", callback_data: `delete_message_${forwardedMessage?.message_id}-${message.message_id}` },
-            { text: "✍🏻 ویرایش پیام", callback_data: `edit_message_${forwardedMessage?.message_id}` }
+            { text: "🗑 حذف پیام", callback_data: `delete_message_${forwardedMessage?.message_id}-${message.message_id}-${getPartnerCode}` },
+            { text: "✍🏻 ویرایش پیام", callback_data: `edit_message_${forwardedMessage?.message_id}-${getPartnerCode}` }
           ]
         ]
       },
@@ -85,14 +87,19 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
       }
     });
 
-    return forwardedMessage;
+    return {
+      message_id: forwardedMessage.message_id as number,
+      reply_markup: data.reply_markup as InlineKeyboardMarkup,
+      control_message_id: control_message.message_id as number
+    };
   } catch (e: any) {
     post("Error copying message:", "E", "red", "red")
     error(e);
 
-    return await ctx.reply("خطایی در ارسال پیام به شریک چت رخ داد.", {
+    await ctx.reply("خطایی در ارسال پیام به شریک چت رخ داد.", {
       reply_parameters: { message_id: ctx.msgId! }
     });
+    return;
   }
 }
 /**
