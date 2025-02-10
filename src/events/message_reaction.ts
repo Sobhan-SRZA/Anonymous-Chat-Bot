@@ -1,6 +1,7 @@
-import { ReactionType, Update } from "telegraf/typings/core/types/typegram";
 import { NarrowedContext } from "telegraf";
 import { MyContext } from "../types/MessageContext";
+import { Update } from "telegraf/typings/core/types/typegram";
+import checkUserIsBlock from "../utils/checkUserIsBlock";
 import EventType from "../types/EventType";
 import error from "../utils/error";
 
@@ -15,15 +16,23 @@ const event: EventType = {
         partnerId = await client.activeChats.get(`${userId}`),
         mappingKey = `${userId}.${partnerId}`,
         mappings = await client.chatMessages.get(mappingKey),
-        forwardedMsgId = mappings?.find(a => a[0] === originalMsgId);
+        forwardedMsgId = mappings?.find(a => a[0].message_id === originalMsgId);
 
       if (!userId || !reactionData || !partnerId || !mappings || !forwardedMsgId)
+        return;
+
+      if (await checkUserIsBlock(
+        client,
+        ctx,
+        userId,
+        partnerId,
+      ))
         return;
 
       try {
         await ctx.telegram.setMessageReaction(
           partnerId,
-          forwardedMsgId[1],
+          forwardedMsgId[1].message_id,
           reactionData.new_reaction
         );
       } catch { }

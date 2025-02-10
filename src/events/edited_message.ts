@@ -1,6 +1,7 @@
 import { Message, Update } from "telegraf/typings/core/types/typegram";
 import { NarrowedContext } from "telegraf";
 import { MyContext } from "../types/MessageContext";
+import checkUserIsBlock from "../utils/checkUserIsBlock";
 import EventType from "../types/EventType";
 import error from "../utils/error";
 
@@ -8,37 +9,40 @@ const event: EventType = {
   name: "edited_message",
   run: async (client, ctx: NarrowedContext<MyContext, Update.MessageReactionUpdate>) => {
     try {
-      //   const
-      //     userId = ctx.from!.id,
-      //     editedMsg = ctx.editedMessage! as Message.TextMessage,
-      //     originalMsgId = editedMsg.message_id,
-      //     partnerId = await client.activeChats.get(`${userId}`),
-      //     mappingKey = `${userId}.${partnerId}`,
-      //     mappings = await client.chatMessages.get(mappingKey),
-      //     forwardedMsgId = mappings?.find(a => a[0] === originalMsgId);
+      const
+        userId = ctx.from!.id,
+        editedMsg = ctx.editedMessage! as Message.TextMessage,
+        originalMsgId = editedMsg.message_id,
+        partnerId = await client.activeChats.get(`${userId}`),
+        mappingKey = `${userId}.${partnerId}`,
+        mappings = await client.chatMessages.get(mappingKey),
+        forwardedMsgId = mappings?.find(a => a[0].message_id === originalMsgId);
 
-      //   if (!userId || !editedMsg || !partnerId || !mappings || !forwardedMsgId)
-      //     return;
+      if (!userId || !editedMsg || !partnerId || !mappings || !forwardedMsgId)
+        return;
 
-      //   try {
-      //     const originalMessage = await ctx.telegram.getMessage(
-      //       partnerId,
-      //       forwardedMsgId[1]
-      //     );
+      if (await checkUserIsBlock(
+        client,
+        ctx,
+        userId,
+        partnerId,
+      ))
+        return;
 
-      //     if (editedMsg.text) {
-      //       await ctx.telegram.editMessageText(
-      //         partnerId,
-      //         forwardedMsgId[1],
-      //         undefined,
-      //         editedMsg.text,
-      //         {
-      //           reply_markup: originalMessage?.reply_markup
-      //         }
-      //       );
-      //     }
+      try {
+        if (editedMsg.text) {
+          await ctx.telegram.editMessageText(
+            partnerId,
+            forwardedMsgId[1].message_id,
+            undefined,
+            editedMsg.text,
+            {
+              reply_markup: forwardedMsgId[1].reply_markup
+            }
+          );
+        }
 
-      //   } catch { }
+      } catch { }
     } catch (e: any) {
       error(e);
     }

@@ -2,6 +2,7 @@ import { startMessageButtons } from "../../utils/startMessage";
 import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
 import { Message } from "telegraf/typings/core/types/typegram";
 import getUserIdByReferralCode from "../../utils/getUserIdByReferralCode";
+import checkUserIsBlock from "../../utils/checkUserIsBlock";
 import getUserProfile from "../../utils/getUserProfile";
 import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
@@ -22,12 +23,16 @@ const command: CommandType = {
         db = client.db!,
         userId = ctx.from.id,
         userProfile = await getUserProfile(db, userId),
-        reply_markup = {
-          inline_keyboard: [
-            [
-              { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+        data: ExtraReplyMessage = {
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "بازگشت به منوی شروع 🏠", callback_data: "return_start" }
+              ]
             ]
-          ]
+          },
+          reply_parameters: { message_id: ctx.msgId }
         };
 
       if (args[0]) {
@@ -35,33 +40,37 @@ const command: CommandType = {
         if (!referrerId)
           return await ctx.reply(
             markdownToHtml("ارتباط بر قرار نشد 😕\nبنظر میرسه کد اشتباه وارد شده و یا اینکه منقضی شده پس بهتره از یه کد جدید استفاده بکنی."),
-            {
-              parse_mode: "HTML",
-              reply_markup,
-              reply_parameters: { message_id: ctx.msgId }
-            }
+            data
           )
 
         if (referrerId.toString() === ctx.from.id.toString())
           return await ctx.reply(
             markdownToHtml("حالت خوبه؟ اگه بخوای شماره روانشناسم رو بهت بدم باهاش حرف بزن شاید کمک کرد!\nدرک میکنم بعضی وقتا با خودمون حرف میزنیم ولی من نمیتونم در این مورد بهت کمک کنم 😶"),
-            {
-              parse_mode: "HTML",
-              reply_markup,
-              reply_parameters: { message_id: ctx.msgId }
-            }
+            data
           )
 
         const partnerProfile = await getUserProfile(db, referrerId);
         if (!partnerProfile)
           return await ctx.reply(
             markdownToHtml("بنظر میرسه کسی که با این کد لینک خصوصی داره هنوز پروفایلی نداره :/"),
-            {
-              parse_mode: "HTML",
-              reply_markup,
-              reply_parameters: { message_id: ctx.msgId }
-            }
+            data
+          );
+
+        if (await checkUserIsBlock(
+          client,
+          ctx,
+          userId,
+          referrerId,
+          async (ctx) => await ctx.reply(
+            markdownToHtml("کاربر مالک این کد قبلا توسط شما مسدود شده است.\n```\n**برای خارج سازی از مسدودی، از دستور /settings استفاده کنید!**\n```"),
+            data
+          ),
+          async (ctx) => await ctx.reply(
+            markdownToHtml("شما توسط کاربر مالک کد مسدود هستید."),
+            data
           )
+        ))
+          return;
 
         const msg = await ctx.reply(
           markdownToHtml(`ارتباط با **${partnerProfile.nickname || `User_${args[0]}`}** برقرار شد؛ حرفی، سخنی، انتقادی، نظری یا هرچی داشتی الان میتونی بفرستی و براش ارسال بشه.${"\n\n" + (partnerProfile.welcome_message || "")}`),
