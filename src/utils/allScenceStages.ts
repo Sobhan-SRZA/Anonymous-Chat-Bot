@@ -62,8 +62,8 @@ const
         forwardedMessage = (await forwardMessageToPartner(ctx, partnerId))!;
 
       await client.chatMessages.push(`${userId}.${partnerId}`, [
-        { message_id: ctx.msgId, control_message_id: forwardedMessage.control_message_id },
-        { message_id: forwardedMessage.message_id, reply_markup: forwardedMessage.reply_markup }
+        { message_id: ctx.msgId, control_message_id: forwardedMessage?.control_message_id },
+        { message_id: forwardedMessage?.message_id, reply_markup: forwardedMessage?.reply_markup }
       ]);
       await client.telegram.editMessageText(
         lastMessage.chat.id,
@@ -170,7 +170,7 @@ const
 
       let userId: number | null = null;
       if (forwarded)
-        userId = forwarded.sender_user.id;
+        userId = forwarded?.sender_user.id;
 
       else {
         const

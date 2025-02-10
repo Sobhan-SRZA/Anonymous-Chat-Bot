@@ -55,15 +55,14 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
     forwardedMessage = await ctx.telegram.copyMessage(
       partnerId,
       ctx.chat!.id,
-      message.message_id,
+      ctx.msgId!,
       data
     ).catch(async () => {
       forwardedMessage = await ctx.telegram.copyMessage(
         partnerId,
         ctx.chat!.id,
-        message.message_id,
+        ctx.msgId!,
         {
-          parse_mode: "Markdown",
           reply_markup: data.reply_markup
         }
       )
