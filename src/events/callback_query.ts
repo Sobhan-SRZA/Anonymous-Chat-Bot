@@ -251,6 +251,7 @@ const event: EventType = {
                         })
                     };
                     reply_markup.inline_keyboard.push([
+                        { text: "غیر مسدودسازی همه 📛", callback_data: "unblocks_all_blocks" },
                         { text: "بازگشت ↩", callback_data: "setting" }
                     ]);
                     return await ctx.editMessageText(markdownToHtml("**لیست مسدود شده ها:**"), {
@@ -438,6 +439,16 @@ const event: EventType = {
                     });
 
                     await ctx.scene.enter("found_user");
+                    return;
+                }
+
+                // Unblock all blocks
+                case "unblocks_all_blocks": {
+                    if (!(await client.blocks.has(`${userId}`)))
+                        return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
+
+                    await client.blocks.delete(`${userId}`);
+                    await ctx.answerCbQuery("تمامی مسدودی ها آزاد شدند.")
                     return;
                 }
             }
@@ -748,10 +759,33 @@ const event: EventType = {
 
                 await ctx.answerCbQuery("کاربر یافت شد.")
                 return await ctx.reply("کاربر با دلیل بالا مسدود شده است ☝🏻", {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: "غیر مسدود سازی 📛", callback_data: `unblock_${message_id}` }]
+                        ]
+                    },
                     reply_parameters: {
                         message_id: getUser.message_id
                     }
                 })
+            }
+
+            // Unblock
+            if (callback_data.startsWith("unblock_")) {
+                const
+                    message_id = callback_data.replace("unblock_", ""),
+                    blocks = await client.blocks.get(`${userId}`);
+
+                if (!blocks)
+                    return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
+
+                const getUser = blocks.find(a => a.message_id === +message_id);
+                if (!getUser)
+                    return await ctx.answerCbQuery("کاربر یافت نشد.")
+
+                await client.blocks.set(`${userId}`, blocks.filter(a => a.message_id !== +message_id))
+                await ctx.answerCbQuery("کاربر از مسدودی خارج شد.")
+                return await ctx.deleteMessage();
             }
         } catch (e: any) {
             error(e);

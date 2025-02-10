@@ -1,12 +1,15 @@
 import TelegramClient from "../classes/Client";
 
 export default async function getUserIdByUsername(client: TelegramClient, username: string): Promise<number | null> {
+  try {
+    const user = await client.telegram.getChat(`@${username}`);
+    if (!user || !user.id)
+      return null;
 
-  const user = await client.telegram.getChat(username);
-  if (!user || !user.id)
-    return null;
-
-  return user.id || null;
+    return user.id || null;
+  } catch {
+    return null
+  }
 }
 /**
  * @copyright
