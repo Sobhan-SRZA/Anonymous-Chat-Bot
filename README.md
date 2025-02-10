@@ -93,8 +93,11 @@ node dist/index.js
 
 | Command             | Description                                                                                                                                        | Emoji |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| `/start`            | Starts the bot. Without parameters, it shows usage instructions. With a referral parameter (`<referralCode>`), it connects you with a partner. | 🚀     |
-| `/stop`             | Stops the current chat session and removes you from any waiting queues.                                                                            | ✋     |
+| `/help`             | Preview all bot avalible commands with description.                                                                                                | ⚒     |
+| `/link`             | Send or create a referral link of your anonymous chat invite.                                                                                      | 🔗    |
+| `/settings`         | Your settings in bot. (With using buttons you can customize your bot profile.)                                                                     | ⚙     |
+| `/start`            | Starts the bot. Without parameters, it shows usage instructions. With a referral parameter (`<referralCode>`), it connects you with a partner.     | 🚀    |
+| `/stop`             | Stops the current chat session and removes you from any waiting queues.                                                                            | ✋    |
 
 ---
 
