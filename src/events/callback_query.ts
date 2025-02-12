@@ -20,6 +20,7 @@ import chooseRandom from "../functions/chooseRandom";
 import cleanupUser from "../utils/cleanupUser";
 import EventType from "../types/EventType";
 import error from "../utils/error";
+import setLastMessage from "../utils/setLastMessage";
 
 const event: EventType = {
     name: "callback_query",
@@ -166,18 +167,9 @@ const event: EventType = {
                             }
                         }
                     ) as Update.Edited & Message.TextMessage;
-                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-                        text: msg.text,
-                        message_id: msg.message_id,
-                        chat: {
-                            id: msg.chat.id,
-                            type: msg.chat.type
-                        },
-                        from: {
-                            id: msg.from!.id,
-                            username: msg.from!.username
-                        }
-                    });
+
+                    // Set last message
+                    setLastMessage(ctx, msg);
 
                     await ctx.scene.enter("change_nickname");
                     return;
@@ -218,18 +210,9 @@ const event: EventType = {
                             }
                         }
                     ) as Update.Edited & Message.TextMessage;
-                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-                        text: msg.text,
-                        message_id: msg.message_id,
-                        chat: {
-                            id: msg.chat.id,
-                            type: msg.chat.type
-                        },
-                        from: {
-                            id: msg.from!.id,
-                            username: msg.from!.username
-                        }
-                    });
+
+                    // Set last message
+                    setLastMessage(ctx, msg);
 
                     await ctx.scene.enter("change_welcome_message");
                     return;
@@ -425,18 +408,7 @@ const event: EventType = {
                     ) as Update.Edited & Message.TextMessage;
 
                     // Set last message to answer  
-                    ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-                        text: msg.text,
-                        message_id: msg.message_id,
-                        chat: {
-                            id: msg.chat.id,
-                            type: msg.chat.type
-                        },
-                        from: {
-                            id: msg.from!.id,
-                            username: msg.from!.username
-                        }
-                    });
+                    setLastMessage(ctx, msg);
 
                     await ctx.scene.enter("found_user");
                     return;
@@ -635,19 +607,7 @@ const event: EventType = {
                 ) as Update.Edited & Message.TextMessage;
 
                 // Set last message to answer  
-                ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-                    text: msg.text,
-                    message_id: msg.message_id,
-                    chat: {
-                        id: msg.chat.id,
-                        type: msg.chat.type
-                    },
-                    from: {
-                        id: msg.from!.id,
-                        username: msg.from!.username
-                    },
-                    to: +messageId
-                });
+                setLastMessage(ctx, msg, null, +messageId);
 
                 await ctx.scene.enter("edit_message");
                 return;
@@ -684,19 +644,7 @@ const event: EventType = {
                 ) as Update.Edited & Message.TextMessage;
 
                 // Set last message to answer  
-                ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-                    text: msg.text,
-                    message_id: msg.message_id,
-                    chat: {
-                        id: msg.chat.id,
-                        type: msg.chat.type
-                    },
-                    from: {
-                        id: msg.from!.id,
-                        username: msg.from!.username
-                    },
-                    to: partnerId
-                });
+                setLastMessage(ctx, msg, null, partnerId);
 
                 await ctx.scene.enter("continue_or_answer_chat");
                 return;

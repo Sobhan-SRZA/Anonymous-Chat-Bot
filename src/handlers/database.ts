@@ -46,6 +46,7 @@ export default async (client: TelegramClient) => {
         client.activeChats = client.db.table("activeChats");
         client.chatMessages = client.db.table("chatMessages");
         client.blocks = client.db.table("blocks");
+        client.users = await client.db.set("users", []);
         post(
             `Database Is Successfully Activated!! (Type: ${config.source.database.type.toLocaleUpperCase()})`,
             "S"

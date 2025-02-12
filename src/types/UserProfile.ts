@@ -88,6 +88,13 @@ export default interface Profile {
         send_file?: boolean;
         send_sticker?: boolean;
     }
+};
+
+
+export interface UserData {
+    name?: string;
+    username?: string;
+    id?: number;
 }
 /**
  * @copyright

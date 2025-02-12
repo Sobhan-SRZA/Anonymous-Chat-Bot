@@ -14,6 +14,7 @@ class TelegramClient extends telegraf_1.Telegraf {
     activeChats;
     chatMessages;
     blocks;
+    users;
     constructor(token, options) {
         super(token || config_1.default.bot.token, options);
         this.config = config_1.default;

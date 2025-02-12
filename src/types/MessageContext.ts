@@ -2,21 +2,23 @@ import { MaybeInaccessibleMessage, Update, User } from "telegraf/typings/core/ty
 import { Context, Scenes } from "telegraf";
 import { Collection } from "../classes/Collection";
 
+export type lastMessageType = {
+    text: string | undefined;
+    chat: {
+        id: number;
+        type: "private" | "group" | "supergroup" | "channel";
+    };
+    from: {
+        id: number;
+        username: string | undefined
+    };
+    message_id: number | undefined;
+    to?: number;
+}
+
 // Custom session
 interface MySession extends Scenes.SceneSessionData {
-    lastMessage?: Collection<number, {
-        text: string | undefined;
-        chat: {
-            id: number;
-            type: "private" | "group" | "supergroup" | "channel";
-        };
-        from: {
-            id: number;
-            username: string | undefined
-        };
-        message_id: number | undefined;
-        to?: number;
-    }>;
+    lastMessage?: Collection<number, lastMessageType>;
 }
 
 // Custom telegraf context

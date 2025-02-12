@@ -39,6 +39,7 @@ exports.default = async (client) => {
         client.activeChats = client.db.table("activeChats");
         client.chatMessages = client.db.table("chatMessages");
         client.blocks = client.db.table("blocks");
+        client.users = await client.db.set("users", []);
         (0, post_1.default)(`Database Is Successfully Activated!! (Type: ${config_1.default.source.database.type.toLocaleUpperCase()})`, "S");
     }
     catch (e) {
