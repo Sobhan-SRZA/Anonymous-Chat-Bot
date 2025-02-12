@@ -16,11 +16,11 @@ import checkUserIsBlock from "../utils/checkUserIsBlock";
 import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
 import setUserProfile from "../utils/setUserProfile";
+import setLastMessage from "../utils/setLastMessage";
 import chooseRandom from "../functions/chooseRandom";
 import cleanupUser from "../utils/cleanupUser";
 import EventType from "../types/EventType";
 import error from "../utils/error";
-import setLastMessage from "../utils/setLastMessage";
 
 const event: EventType = {
     name: "callback_query",
@@ -48,16 +48,8 @@ const event: EventType = {
                     [{ text: "بازگشت 🔙", callback_data: "return_start" }]
                 ];
 
-
-            // Reset lastMessage
-            ctx.session = {
-                __scenes: {
-                    lastMessage: new Collection()
-                }
-            };
-
             // Set last activity
-            await updateUserLastSeen(db, userId);
+            await updateUserLastSeen(db, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
 
             switch (callback_data) {
 
@@ -82,7 +74,7 @@ const event: EventType = {
                             send_voice: true
                         };
 
-                        await setUserProfile(db, userId, profile);
+                        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                     }
 
                     inline_keyboard.push([{ text: "تغییر جنسیت 🚻", callback_data: "change_gender" }]);
@@ -139,7 +131,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("نام نمایشی در چت خصوصی حذف شد.");
                         if (profile && profile.nickname) {
                             profile.nickname = undefined;
-                            await setUserProfile(db, userId, profile)
+                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -182,7 +174,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("پیام خوش آمد گویی حذف شد.");
                         if (profile && profile.welcome_message) {
                             profile.welcome_message = undefined;
-                            await setUserProfile(db, userId, profile)
+                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -381,7 +373,7 @@ const event: EventType = {
                 // Cancel sending message
                 case "cancel_sending": {
                     await ctx.answerCbQuery("ارسال پیغام لغو شد.");
-                    ctx.session.__scenes!.lastMessage!.delete(client.botInfo!.id);
+                    ctx.session.__scenes?.lastMessage?.delete(client.botInfo!.id);
                     await ctx.deleteMessage();
                     await ctx.scene.leave();
                     return;
@@ -431,7 +423,7 @@ const event: EventType = {
                 const gender = callback_data.replace("set_gender_", "") as UserGender;
                 try {
                     profile.gender = gender;
-                    await setUserProfile(db, userId, profile);
+                    await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 } catch {
                     return await ctx.answerCbQuery("مشکلی پیش آمد لطفا دوباره تلاش کنید :(");
                 }
@@ -458,7 +450,7 @@ const event: EventType = {
                     newButtons = await updateInlineKeyboard(callbackQuery, { text: action_text, callback_data: new_callback_data });
 
                 profile.permissions![permission_name] = action;
-                await setUserProfile(db, userId, profile);
+                await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 await ctx.answerCbQuery(action_text);
                 return await ctx.editMessageReplyMarkup({ inline_keyboard: newButtons });
             }
@@ -522,7 +514,8 @@ const event: EventType = {
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
                     userMessageDB = `${userId}.${partnerId}`,
                     partnerMessageDB = `${partnerId}.${userId}`,
-                    userMessages = await client.chatMessages.get(userMessageDB);
+                    userMessages = await client.chatMessages.get(userMessageDB),
+                    partnerMessages = await client.chatMessages.get(partnerMessageDB);
 
                 if (!userMessages) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
@@ -530,16 +523,18 @@ const event: EventType = {
                 }
 
                 try {
-                    await ctx.telegram.deleteMessages(partnerId, userMessages.map(a => a[1].control_message_id!));
+                    if (partnerMessages)
+                        await ctx.telegram.deleteMessages(partnerId, partnerMessages.map(a => a[0].control_message_id!));
+
                     await ctx.telegram.deleteMessages(partnerId, userMessages.map(a => a[1].message_id)!);
                     await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0].control_message_id!));
                     await ctx.telegram.deleteMessages(userId, userMessages.map(a => a[0].message_id));
-                    await client.chatMessages.delete(userMessageDB);
-                    await client.chatMessages.delete(partnerMessageDB);
-                    await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
                 } catch {
                     await ctx.answerCbQuery("خطایی پیش آمد.");
                 }
+                await client.chatMessages.delete(userMessageDB);
+                await client.chatMessages.delete(partnerMessageDB);
+                await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                 return await ctx.reply("تاریخچه چت با موفقیت پاک شد.", {
                     reply_parameters: {

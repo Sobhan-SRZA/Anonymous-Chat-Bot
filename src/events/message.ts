@@ -9,6 +9,7 @@ import checkAdmin from "../utils/checkAdmin";
 import checkOwner from "../utils/checkOwner";
 import EventType from "../types/EventType";
 import error from "../utils/error";
+import getUserProfile from "../utils/getUserProfile";
 
 const event: EventType = {
   name: "message",
@@ -16,7 +17,8 @@ const event: EventType = {
     try {
       const
         db = client.db!,
-        userId = message.from!.id;
+        userId = message.from!.id,
+        userProfile = await getUserProfile(db, userId);
 
       // Filter the bots
       if (message.from.is_bot)
@@ -26,7 +28,8 @@ const event: EventType = {
       if (message.text && message.text.startsWith("/")) {
 
         // Set last activity
-        await updateUserLastSeen(db, userId);
+        if (userProfile)
+          await updateUserLastSeen(db, { id: userId, name: message.from?.first_name, username: message.from?.username?.toLowerCase() });
 
         const
           args = message.text.slice(1).trim().split(/ +/g),
