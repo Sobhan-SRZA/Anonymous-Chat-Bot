@@ -8,6 +8,7 @@ import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
 import CommandType from "../../types/command";
 import error from "../../utils/error";
+import setUserData from "../../utils/setUserData";
 
 const command: CommandType = {
   data: {
@@ -113,6 +114,7 @@ const command: CommandType = {
           markdownToHtml(`سلام **${ctx.from.first_name}**!👋🏻\nبه ربات چت خصوصی خوش اومدی💋`),
           { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
         );
+        await setUserData(client, { id: ctx.from.id, username: ctx.from.username, name: ctx.from.first_name });
         await setUserProfile(db, ctx.from.id, {});
       }
 

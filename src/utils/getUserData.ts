@@ -1,15 +1,15 @@
+import { UserData } from "../types/UserProfile";
 import TelegramClient from "../classes/Client";
 
-export default async function getUserIdByUsername(client: TelegramClient, username: string): Promise<number | null> {
-  try {
-    const user = await client.telegram.getChat(`@${username}`);
-    if (!user || !user.id)
-      return null;
+export default function getUserData(client: TelegramClient, data: UserData): UserData | null {
+  const findUser = client.users.find(
+    a =>
+      a.id === data.id ||
+      a.name === data.name ||
+      a.username === data.username
+  );
 
-    return user.id || null;
-  } catch {
-    return null
-  }
+  return findUser || null
 }
 /**
  * @copyright

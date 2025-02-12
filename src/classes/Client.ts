@@ -2,6 +2,7 @@ import { Scenes, session, Telegraf } from "telegraf";
 import { InlineKeyboardMarkup } from "telegraf/typings/core/types/typegram";
 import { Collection } from "./Collection";
 import { MyContext } from "../types/MessageContext";
+import { UserData } from "../types/UserProfile";
 import { QuickDB } from "quick.db";
 import CommandType, { Categories } from "../types/command";
 import config from "../../config";
@@ -17,6 +18,7 @@ export default class TelegramClient extends Telegraf<MyContext> {
     activeChats: QuickDB<number>;
     chatMessages: QuickDB<{ reply_markup?: InlineKeyboardMarkup, message_id: number, control_message_id?: number }[][]>;
     blocks: QuickDB<{ id: number, message_id: number, messsage_text: string, date: number }[]>;
+    users: UserData[];
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);
