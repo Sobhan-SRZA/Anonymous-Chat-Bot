@@ -18,7 +18,7 @@ export default class TelegramClient extends Telegraf<MyContext> {
     activeChats: QuickDB<number>;
     chatMessages: QuickDB<{ reply_markup?: InlineKeyboardMarkup, message_id: number, control_message_id?: number }[][]>;
     blocks: QuickDB<{ id: number, message_id: number, messsage_text: string, date: number }[]>;
-    users: UserData[];
+    users: QuickDB<UserData>;
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);

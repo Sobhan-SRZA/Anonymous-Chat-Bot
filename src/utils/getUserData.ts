@@ -1,15 +1,16 @@
 import { UserData } from "../types/UserProfile";
 import TelegramClient from "../classes/Client";
 
-export default function getUserData(client: TelegramClient, data: UserData): UserData | null {
-  const findUser = client.users.find(
+export default async function getUserData(client: TelegramClient, data: UserData) {
+  const allUsers = await client.users.all();
+  const findUser = allUsers.find(
     a =>
-      a.id === data.id ||
-      a.name === data.name ||
-      a.username === data.username
+      a.value.id === data.id ||
+      a.value.name === data.name ||
+      a.value.username === data.username?.toLowerCase()
   );
 
-  return findUser || null
+  return findUser?.value || null
 }
 /**
  * @copyright

@@ -2,9 +2,7 @@ import { UserData } from "../types/UserProfile";
 import TelegramClient from "../classes/Client";
 
 export default async function setUserData(client: TelegramClient, data: UserData) {
-  const newUsers = client.users.push(data);
-
-  return await client.db!.set("users", newUsers);
+  return await client.users.set(`${data.id}`, data);
 }
 /**
  * @copyright

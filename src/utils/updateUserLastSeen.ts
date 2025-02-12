@@ -1,7 +1,11 @@
+import { UserData } from "../types/UserProfile";
 import { QuickDB } from "quick.db";
+import setUserData from "./setUserData";
+import client from "../..";
 
-export default async function updateUserLastSeen(db: QuickDB, userId: number) {
-  return await db.set(`user.${userId}.lastSeen`, Date.now());
+export default async function updateUserLastSeen(db: QuickDB, data: UserData) {
+  await setUserData(client, data)
+  return await db.set(`user.${data.id}.lastSeen`, Date.now());
 }
 /**
  * @copyright

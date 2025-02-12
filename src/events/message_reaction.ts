@@ -10,9 +10,9 @@ const event: EventType = {
   run: async (client, ctx: NarrowedContext<MyContext, Update.MessageReactionUpdate>) => {
     try {
       const
-        userId = ctx.update?.message_reaction?.user?.id,
-        reactionData = ctx.update.message_reaction,
-        originalMsgId = reactionData.message_id,
+      reactionData = ctx.update?.message_reaction,
+      userId = reactionData?.user?.id,
+        originalMsgId = reactionData?.message_id,
         partnerId = await client.activeChats.get(`${userId}`),
         mappingKey = `${userId}.${partnerId}`,
         mappings = await client.chatMessages.get(mappingKey),

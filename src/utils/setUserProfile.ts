@@ -1,8 +1,12 @@
 import { QuickDB } from "quick.db";
-import Profile from "../types/UserProfile";
+import Profile, { UserData } from "../types/UserProfile";
+import setUserData from "./setUserData";
+import client from "../..";
 
-export default async function setUserProfile(db: QuickDB, userId: number, profile: Profile) {
-  return await db.set(`user.${userId}`, profile);
+export default async function setUserProfile(db: QuickDB, data: UserData, profile: Profile) {
+  await setUserData(client, data);
+  await db.set(`user.${data.id}`, profile);
+  return profile;
 }
 /**
  * @copyright

@@ -1,10 +1,8 @@
-import { getToggleButton, PermissionNames, permissionsMapping } from "../../types/UserProfile";
-import setUserProfile from "../../utils/setUserProfile";
+import generateReferralLink from "../../utils/generateReferralLink";
 import getUserProfile from "../../utils/getUserProfile";
+import markdownToHtml from "../../functions/markdownToHtml";
 import CommandType from "../../types/command";
 import error from "../../utils/error";
-import generateReferralLink from "../../utils/generateReferralLink";
-import markdownToHtml from "../../functions/markdownToHtml";
 
 const command: CommandType = {
   data: {

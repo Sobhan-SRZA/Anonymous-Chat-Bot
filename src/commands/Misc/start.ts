@@ -8,7 +8,7 @@ import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
 import CommandType from "../../types/command";
 import error from "../../utils/error";
-import setUserData from "../../utils/setUserData";
+import setLastMessage from "../../utils/setLastMessage";
 
 const command: CommandType = {
   data: {
@@ -89,20 +89,9 @@ const command: CommandType = {
             }
           }
         )
+        
         // Set last message to answer  
-        ctx.session.__scenes!.lastMessage!.set(msg.from!.id, {
-          text: msg.text,
-          message_id: msg.message_id,
-          chat: {
-            id: msg.chat.id,
-            type: msg.chat.type
-          },
-          from: {
-            id: msg.from!.id,
-            username: msg.from!.username
-          },
-          to: referrerId
-        });
+        setLastMessage(ctx, msg, null, referrerId);
 
         await ctx.scene.enter("continue_or_answer_chat");
         return;
@@ -114,8 +103,7 @@ const command: CommandType = {
           markdownToHtml(`سلام **${ctx.from.first_name}**!👋🏻\nبه ربات چت خصوصی خوش اومدی💋`),
           { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
         );
-        await setUserData(client, { id: ctx.from.id, username: ctx.from.username, name: ctx.from.first_name });
-        await setUserProfile(db, ctx.from.id, {});
+        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, {});
       }
 
       const replyData: ExtraReplyMessage = {
