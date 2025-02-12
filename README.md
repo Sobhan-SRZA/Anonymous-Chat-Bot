@@ -1,4 +1,31 @@
 # Anonymous Chat Bot 🤖
+<div align="center">
+  <img align="right" src="https://github.com/user-attachments/assets/80237687-dea3-4756-b0a0-1270a2a3d2ac" width=40%>
+  <div align="left">
+    <div align="center" >
+       <img src="https://badges.aleen42.com/src/npm.svg">
+       <img src="https://badges.aleen42.com/src/node.svg">
+       <img src="https://badges.aleen42.com/src/javascript.svg">
+       <img src="https://badges.aleen42.com/src/typescript.svg">
+    </div>
+    <div align="center" >
+       <img src="https://img.shields.io/github/v/release/Sobhan-SRZA/Anonymous-Chat-Bot?label=Version">
+       <img src="https://img.shields.io/github/license/Sobhan-SRZA/Anonymous-Chat-Bot?label=License">
+       <img src="https://img.shields.io/github/last-commit/Sobhan-SRZA/Anonymous-Chat-Bot?label=Last Commit">
+       <img src="https://img.shields.io/github/release-date/Sobhan-SRZA/Anonymous-Chat-Bot?label=Last Release">
+       <img src="https://img.shields.io/github/languages/code-size/Sobhan-SRZA/Anonymous-Chat-Bot?label=Code Size">
+       <img src="https://img.shields.io/github/directory-file-count/Sobhan-SRZA/Anonymous-Chat-Bot?label=Files">
+    </div>
+    <div align="center" >
+       <img src="https://img.shields.io/github/forks/Sobhan-SRZA/Anonymous-Chat-Bot?label=Forks">
+       <img src="https://img.shields.io/github/stars/Sobhan-SRZA/Anonymous-Chat-Bot?label=Stars">
+       <img src="https://img.shields.io/github/watchers/Sobhan-SRZA/Anonymous-Chat-Bot?label=Watchers">
+    </div>
+    <div align="center" >
+        <img style="display:block;margin-left:auto;margin-right:auto;width:30%;" src="https://github-readme-stats.vercel.app/api/pin/?username=Sobhan-SRZA&repo=Anonymous-Chat-Bot&theme=react">
+    </div>
+  </div>
+</div>
 
 This project is a Telegram bot that enables users to chat anonymously. It features a referral system where each user can generate a unique referral link (without revealing their Telegram ID), profile creation (e.g., setting gender), and random anonymous chat options with filtering.
 
