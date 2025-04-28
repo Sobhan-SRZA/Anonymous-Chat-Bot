@@ -36,7 +36,7 @@ const command: CommandType = {
           send_voice: true
         };
 
-        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+        await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
       }
 
       inline_keyboard.push([{ text: "تغییر نام نمایشی 👤", callback_data: "change_nickname" }]);

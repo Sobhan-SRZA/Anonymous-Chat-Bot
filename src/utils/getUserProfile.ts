@@ -3,6 +3,7 @@ import Profile from "../types/UserProfile";
 
 export default async function getUserProfile(db: QuickDB, userId: number): Promise<Profile | null> {
   const profile = await db.get(`user.${userId}`);
+  
   return profile || null;
 }
 /**

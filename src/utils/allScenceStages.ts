@@ -22,14 +22,14 @@ const
         userId = ctx.from!.id,
         lastMessage = ctx.session.__scenes?.lastMessage?.get(client.botInfo!.id)!,
         messageId = lastMessage?.to!,
-        partnerId = (await client.activeChats.get(`${userId}`))!,
+        partnerId = (await client.activeChats!.get(`${userId}`))!,
         leaveScene = async () => {
           ctx.session.__scenes?.lastMessage?.delete(client.botInfo!.id)
           await ctx.scene.leave()
           return;
         },
         mappingKey = `${userId}.${partnerId}`,
-        mappings = await client.chatMessages.get(mappingKey),
+        mappings = await client.chatMessages!.get(mappingKey),
         forwardedMsgId = mappings?.find(a => a[0].message_id === lastMessage?.message_id);
 
       setTimeout(async () => {
@@ -114,7 +114,7 @@ const
       if (!lastMessage)
         return await leaveScene();
 
-      await client.chatMessages.push(`${userId}.${partnerId}`, [
+      await client.chatMessages!.push(`${userId}.${partnerId}`, [
         { message_id: ctx.msgId, control_message_id: forwardedMessage?.control_message_id },
         { message_id: forwardedMessage?.message_id, reply_markup: forwardedMessage?.reply_markup }
       ]);
@@ -162,10 +162,10 @@ const
         return await leaveScene();
 
       // Set last activity
-      await updateUserLastSeen(db, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
+      await updateUserLastSeen(client, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
 
       profile.welcome_message = ctx.text;
-      await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+      await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
       await client.telegram.editMessageText(
         lastMessage?.chat?.id,
         lastMessage?.message_id,
@@ -218,7 +218,7 @@ const
         return await leaveScene();
 
       profile.nickname = ctx.text;
-      await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+      await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
       await client.telegram.editMessageText(
         lastMessage?.chat?.id,
         lastMessage?.message_id,
@@ -318,8 +318,8 @@ const
       if (userId && userProfile) {
         const
           userReferralCode = await getOrCreateReferralCode(db, userId),
-          getUserBlocks = await client.blocks.get(`${ctx.from.id}`),
-          getPartnerBlocks = await client.blocks.get(`${userId}`);
+          getUserBlocks = await client.blocks!.get(`${ctx.from.id}`),
+          getPartnerBlocks = await client.blocks!.get(`${userId}`);
 
         if (getUserBlocks && getUserBlocks.some(a => a.id === userId)) {
           await ctx.answerCbQuery("ارسال ناموفق | کاربر توسط شما مسدود است.");

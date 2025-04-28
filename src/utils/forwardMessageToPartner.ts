@@ -31,7 +31,7 @@ export default async function forwardMessageToPartner(ctx: MyContext, partnerId:
       getUserCode = await getOrCreateReferralCode(db, ctx.from!.id),
       getPartnerCode = await getOrCreateReferralCode(db, partnerId),
       userMessageDB = `${ctx.from!.id}.${partnerId}`,
-      userMessages = await client.chatMessages.get(userMessageDB);
+      userMessages = await client.chatMessages!.get(userMessageDB);
 
     data.reply_markup = {
       inline_keyboard: [

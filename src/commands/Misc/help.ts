@@ -1,6 +1,5 @@
 import { readdirSync } from "fs";
 import CommandType, { Categories } from "../../types/command";
-import firstUpperCase from "../../functions/firstUpperCase";
 import markdownToHtml from "../../functions/markdownToHtml";
 import error from "../../utils/error";
 
@@ -20,7 +19,7 @@ const command: CommandType = {
         botDescription = "این ربات برای چت خصوصی طراحی شده و شما میتوانید با استفاده از این ربات به صورت ناشناس با بقیه چت کنید بدون لو رفتن هیچ اطلاعاتی از جانب ربات.\n```\nاین ربات چی اطلاعاتی رو ذخیره نمیکند و اطلاعات خصوصی شما بدون خطر لو رفتن فقط توسط شما قابل دسترس میباشد.\n```\n";
 
       categories.forEach(async dir => {
-        commandList += `**${firstUpperCase(dir)}**\n${client.cmds_info_list_str(dir.toLowerCase() as Categories)}\n`;
+        commandList += `**${dir.toCapitalize()}**\n${client.cmds_info_list_str(dir.toLowerCase() as Categories)}\n`;
       });
       return await ctx.reply(
         markdownToHtml(`${botDescription}**لیست دستورات ربات:**\n${commandList}`),

@@ -5,8 +5,8 @@ import { MyContext } from "../types/MessageContext";
 import { UserData } from "../types/UserProfile";
 import { QuickDB } from "quick.db";
 import CommandType, { Categories } from "../types/command";
-import config from "../../config";
 import allScenceStages from "../utils/allScenceStages";
+import config from "../../config";
 
 export default class TelegramClient extends Telegraf<MyContext> {
     commands: Collection<string, CommandType>;
@@ -15,17 +15,26 @@ export default class TelegramClient extends Telegraf<MyContext> {
     db: QuickDB | null;
 
     // Anonymous chat variuables  
-    activeChats: QuickDB<number>;
-    chatMessages: QuickDB<{ reply_markup?: InlineKeyboardMarkup, message_id: number, control_message_id?: number }[][]>;
-    blocks: QuickDB<{ id: number, message_id: number, messsage_text: string, date: number }[]>;
-    users: QuickDB<UserData>;
+    activeChats: QuickDB<number> | null;
+    chatMessages: QuickDB<{ reply_markup?: InlineKeyboardMarkup, message_id: number, control_message_id?: number }[][]> | null;
+    blocks: QuickDB<{ id: number, message_id: number, messsage_text: string, date: number }[]> | null;
+    users: QuickDB<UserData> | null;
     constructor(token?: string, options?: Telegraf.Options<any>) {
 
         super(token || config.bot.token, options);
         this.config = config;
         this.commands = new Collection();
         this.cooldowns = new Collection();
+
+        // initialize QuickDB
         this.db = null;
+        this.setDB();
+
+        // Anonymous chat variuables  
+        this.activeChats = null;
+        this.chatMessages = null;
+        this.blocks = null;
+        this.users = null;
 
         // Add session
         this.use(session());
@@ -47,7 +56,7 @@ export default class TelegramClient extends Telegraf<MyContext> {
         this.use(stage.middleware());
     }
 
-    cmds_info_list_str(category_name: Categories) {
+    public cmds_info_list_str(category_name: Categories) {
         let description = "";
         this.commands
             .filter(cmd => cmd.category === category_name)
@@ -56,6 +65,25 @@ export default class TelegramClient extends Telegraf<MyContext> {
             });
 
         return description;
+    }
+
+    private async setDB() {
+        const
+            databaseFile = await import("../utils/database"),
+            loadDB = databaseFile.default || databaseFile,
+            database = await loadDB();
+
+        if (database) {
+            this.db = database;
+
+            // Anonymous chat variuables  
+            this.activeChats = this.db.table("activeChats");
+            this.chatMessages = this.db.table("chatMessages");
+            this.blocks = this.db.table("blocks");
+            this.users = this.db.table("users");
+        }
+
+        return this;
     }
 }
 /**

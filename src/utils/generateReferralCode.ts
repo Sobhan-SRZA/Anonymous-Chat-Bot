@@ -1,7 +1,5 @@
-import chooseRandom from "../functions/chooseRandom";
-
 export default function generateReferralCode(): string {
-  const length = chooseRandom([5, 6, 7, 8, 9, 10]); // Use 5-10 length for key generating length
+  const length = [5, 6, 7, 8, 9, 10].random(); // Use 5-10 length for key generating length
   let key = "";
   let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   for (var i = 0; i < length; i++)

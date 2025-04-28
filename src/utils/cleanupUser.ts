@@ -3,10 +3,10 @@ import error from "./error";
 import post from "../functions/post";
 
 export default async function cleanupUser(client: TelegramClient, userId: number) {
-  if ((await client.activeChats.has(`${userId}`))) {
-    const partnerId = (await client.activeChats.get(`${userId}`))!;
-    await client.activeChats.delete(`${userId}`);
-    await client.activeChats.delete(`${partnerId}`);
+  if ((await client.activeChats!.has(`${userId}`))) {
+    const partnerId = (await client.activeChats!.get(`${userId}`))!;
+    await client.activeChats!.delete(`${userId}`);
+    await client.activeChats!.delete(`${partnerId}`);
     try {
       return await client.telegram.sendMessage(
         partnerId,

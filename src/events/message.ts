@@ -29,7 +29,7 @@ const event: EventType = {
 
         // Set last activity
         if (userProfile)
-          await updateUserLastSeen(db, { id: userId, name: message.from?.first_name, username: message.from?.username?.toLowerCase() });
+          await updateUserLastSeen(client, { id: userId, name: message.from?.first_name, username: message.from?.username?.toLowerCase() });
 
         const
           args = message.text.slice(1).trim().split(/ +/g),
@@ -79,12 +79,12 @@ const event: EventType = {
 
       // Chat forwarding
       const
-        partnerId = await client.activeChats.get(`${userId}`),
-        chatMessages = await client.chatMessages.get(`${userId}.${partnerId}`);
+        partnerId = await client.activeChats!.get(`${userId}`),
+        chatMessages = await client.chatMessages!.get(`${userId}.${partnerId}`);
 
       if (partnerId || chatMessages) {
         const forwardedMessage = (await forwardMessageToPartner(message, partnerId!))!;
-        await client.chatMessages.push(`${userId}.${partnerId}`, [
+        await client.chatMessages!.push(`${userId}.${partnerId}`, [
           { message_id: message.msgId, control_message_id: forwardedMessage.control_message_id },
           { message_id: forwardedMessage.message_id, reply_markup: forwardedMessage.reply_markup }
         ]);

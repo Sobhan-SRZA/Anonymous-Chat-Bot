@@ -1,9 +1,9 @@
-export default function replaceValues(string: string, object: any) {
-  Object
-    .keys(object)
-    .forEach(a => string = string.replace(`{${a}}`, object[a]));
+export { }
 
-  return string;
+declare global {
+    interface String {
+        toCapitalize(): string;
+    }
 }
 /**
  * @copyright

@@ -1,5 +1,9 @@
-export default function firstUpperCase(string: string) {
-  return `${string[0].toUpperCase()}${string.slice(1).toLowerCase()}`;
+export { }
+
+declare global {
+    interface Array<T> {
+        random(): T;
+    }
 }
 /**
  * @copyright

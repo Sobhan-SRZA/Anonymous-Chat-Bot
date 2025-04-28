@@ -13,9 +13,9 @@ const event: EventType = {
         userId = ctx.from!.id,
         editedMsg = ctx.editedMessage! as Message.TextMessage,
         originalMsgId = editedMsg.message_id,
-        partnerId = await client.activeChats.get(`${userId}`),
+        partnerId = await client.activeChats!.get(`${userId}`),
         mappingKey = `${userId}.${partnerId}`,
-        mappings = await client.chatMessages.get(mappingKey),
+        mappings = await client.chatMessages!.get(mappingKey),
         forwardedMsgId = mappings?.find(a => a[0].message_id === originalMsgId);
 
       if (!userId || !editedMsg || !partnerId || !mappings || !forwardedMsgId)

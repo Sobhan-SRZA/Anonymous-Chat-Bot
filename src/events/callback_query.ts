@@ -17,7 +17,6 @@ import getUserProfile from "../utils/getUserProfile";
 import markdownToHtml from "../functions/markdownToHtml";
 import setUserProfile from "../utils/setUserProfile";
 import setLastMessage from "../utils/setLastMessage";
-import chooseRandom from "../functions/chooseRandom";
 import cleanupUser from "../utils/cleanupUser";
 import EventType from "../types/EventType";
 import error from "../utils/error";
@@ -49,7 +48,7 @@ const event: EventType = {
                 ];
 
             // Set last activity
-            await updateUserLastSeen(db, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
+            await updateUserLastSeen(client, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
 
             switch (callback_data) {
 
@@ -74,7 +73,7 @@ const event: EventType = {
                             send_voice: true
                         };
 
-                        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                        await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                     }
 
                     inline_keyboard.push([{ text: "تغییر جنسیت 🚻", callback_data: "change_gender" }]);
@@ -131,7 +130,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("نام نمایشی در چت خصوصی حذف شد.");
                         if (profile && profile.nickname) {
                             profile.nickname = undefined;
-                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                            await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -174,7 +173,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("پیام خوش آمد گویی حذف شد.");
                         if (profile && profile.welcome_message) {
                             profile.welcome_message = undefined;
-                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                            await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -212,7 +211,7 @@ const event: EventType = {
 
                 // Blocks List
                 case "blocked_list": {
-                    const getBlocks = await client.blocks.get(`${userId}`);
+                    const getBlocks = await client.blocks!.get(`${userId}`);
                     if (!getBlocks || getBlocks.length < 1)
                         return await ctx.answerCbQuery("شما کسی را تا به حال مسدود نکرده اید.")
 
@@ -312,7 +311,7 @@ const event: EventType = {
                     if (gender)
                         getActiveUsers = getActiveUsers.filter(a => a.gender === gender);
 
-                    const getRandomActiveUser = chooseRandom(getActiveUsers);
+                    const getRandomActiveUser = getActiveUsers.random();
                     if (getActiveUsers.length > 0) {
                         const partnerId = getRandomActiveUser.id!;
                         if (await checkUserIsBlock(
@@ -330,8 +329,8 @@ const event: EventType = {
                             getUserCode = await getOrCreateReferralCode(db, userId),
                             getPartnerCode = await getOrCreateReferralCode(db, partnerId);
 
-                        await client.activeChats.set(`${userId}`, partnerId);
-                        await client.activeChats.set(`${partnerId}`, userId);
+                        await client.activeChats!.set(`${userId}`, partnerId);
+                        await client.activeChats!.set(`${partnerId}`, userId);
                         await ctx.reply(
                             markdownToHtml(`شما با یک کاربر ناشناس ${gender ? `با جنسیت ${gender} ` : ""}جفت شدید! اکنون می‌توانید پیام‌هایتان را رد و بدل کنید.`),
                             {
@@ -408,10 +407,10 @@ const event: EventType = {
 
                 // Unblock all blocks
                 case "unblocks_all_blocks": {
-                    if (!(await client.blocks.has(`${userId}`)))
+                    if (!(await client.blocks!.has(`${userId}`)))
                         return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
 
-                    await client.blocks.delete(`${userId}`);
+                    await client.blocks!.delete(`${userId}`);
                     await ctx.answerCbQuery("تمامی مسدودی ها آزاد شدند.")
                     return;
                 }
@@ -423,7 +422,7 @@ const event: EventType = {
                 const gender = callback_data.replace("set_gender_", "") as UserGender;
                 try {
                     profile.gender = gender;
-                    await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                    await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 } catch {
                     return await ctx.answerCbQuery("مشکلی پیش آمد لطفا دوباره تلاش کنید :(");
                 }
@@ -450,7 +449,7 @@ const event: EventType = {
                     newButtons = await updateInlineKeyboard(callbackQuery, { text: action_text, callback_data: new_callback_data });
 
                 profile.permissions![permission_name] = action;
-                await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 await ctx.answerCbQuery(action_text);
                 return await ctx.editMessageReplyMarkup({ inline_keyboard: newButtons });
             }
@@ -483,13 +482,13 @@ const event: EventType = {
                     getPartnerCode = callback_data.replace("end_chat_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!;
 
-                if (!(await client.activeChats.has(`${userId}`)) || (await client.activeChats.get(`${userId}`) !== partnerId)) {
+                if (!(await client.activeChats!.has(`${userId}`)) || (await client.activeChats!.get(`${userId}`) !== partnerId)) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                     return await ctx.answerCbQuery("چت قبلاً بسته شده است.");
                 }
 
-                await client.activeChats.delete(`${userId}`);
-                await client.activeChats.delete(`${partnerId}`);
+                await client.activeChats!.delete(`${userId}`);
+                await client.activeChats!.delete(`${partnerId}`);
 
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                 await ctx.answerCbQuery("چت با موفقیت بسته شد.");
@@ -514,8 +513,8 @@ const event: EventType = {
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
                     userMessageDB = `${userId}.${partnerId}`,
                     partnerMessageDB = `${partnerId}.${userId}`,
-                    userMessages = await client.chatMessages.get(userMessageDB),
-                    partnerMessages = await client.chatMessages.get(partnerMessageDB);
+                    userMessages = await client.chatMessages!.get(userMessageDB),
+                    partnerMessages = await client.chatMessages!.get(partnerMessageDB);
 
                 if (!userMessages) {
                     await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
@@ -532,8 +531,8 @@ const event: EventType = {
                 } catch {
                     await ctx.answerCbQuery("خطایی پیش آمد.");
                 }
-                await client.chatMessages.delete(userMessageDB);
-                await client.chatMessages.delete(partnerMessageDB);
+                await client.chatMessages!.delete(userMessageDB);
+                await client.chatMessages!.delete(partnerMessageDB);
                 await ctx.answerCbQuery("تاریخچه چت شما پاک شد.");
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
                 return await ctx.reply("تاریخچه چت با موفقیت پاک شد.", {
@@ -651,12 +650,12 @@ const event: EventType = {
                     getPartnerCode = callback_data.replace("block_", ""),
                     partnerId = (await getUserIdByReferralCode(db, getPartnerCode))!,
                     databaseName = `${userId}`,
-                    getBlocks = await client.blocks.get(databaseName);
+                    getBlocks = await client.blocks!.get(databaseName);
 
                 if (getBlocks && getBlocks.some(a => a.id === partnerId))
                     return await ctx.answerCbQuery("کاربر مسدود هست.")
 
-                await client.blocks.push(databaseName, {
+                await client.blocks!.push(databaseName, {
                     id: partnerId,
                     message_id: ctx.msgId,
                     message_text: ctx.text,
@@ -670,9 +669,9 @@ const event: EventType = {
                     }
                 })
 
-                if ((await client.activeChats.get(`${userId}`)) === partnerId) {
-                    await client.activeChats.delete(`${userId}`);
-                    await client.activeChats.delete(`${partnerId}`);
+                if ((await client.activeChats!.get(`${userId}`)) === partnerId) {
+                    await client.activeChats!.delete(`${userId}`);
+                    await client.activeChats!.delete(`${partnerId}`);
                 }
 
                 await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
@@ -691,7 +690,7 @@ const event: EventType = {
             if (callback_data.startsWith("show_block_")) {
                 const
                     message_id = callback_data.replace("show_block_", ""),
-                    blocks = await client.blocks.get(`${userId}`);
+                    blocks = await client.blocks!.get(`${userId}`);
 
                 if (!blocks)
                     return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
@@ -717,7 +716,7 @@ const event: EventType = {
             if (callback_data.startsWith("unblock_")) {
                 const
                     message_id = callback_data.replace("unblock_", ""),
-                    blocks = await client.blocks.get(`${userId}`);
+                    blocks = await client.blocks!.get(`${userId}`);
 
                 if (!blocks)
                     return await ctx.answerCbQuery("کاربری توسط شما مسدود نشده است.")
@@ -726,7 +725,7 @@ const event: EventType = {
                 if (!getUser)
                     return await ctx.answerCbQuery("کاربر یافت نشد.")
 
-                await client.blocks.set(`${userId}`, blocks.filter(a => a.message_id !== +message_id))
+                await client.blocks!.set(`${userId}`, blocks.filter(a => a.message_id !== +message_id))
                 await ctx.answerCbQuery("کاربر از مسدودی خارج شد.")
                 return await ctx.deleteMessage();
             }

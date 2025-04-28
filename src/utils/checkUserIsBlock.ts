@@ -12,8 +12,8 @@ export default async function checkUserIsBlock(
 ): Promise<boolean | void> {
   try {
     const
-      getUserBlocks = await client.blocks.get(`${userId}`),
-      getPartnerBlocks = await client.blocks.get(`${partnerId}`);
+      getUserBlocks = await client.blocks!.get(`${userId}`),
+      getPartnerBlocks = await client.blocks!.get(`${partnerId}`);
 
     if (getUserBlocks && getUserBlocks.some(a => a.id === +partnerId)) {
       if (userBlockFunction)

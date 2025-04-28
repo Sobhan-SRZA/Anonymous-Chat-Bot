@@ -1,10 +1,9 @@
 import { QuickDB } from "quick.db";
-import { error } from "console";
-import TelegramClient from "../classes/Client";
 import config from "../../config";
+import error from "./error";
 import post from "../functions/post";
 
-export default async (client: TelegramClient) => {
+export default async () => {
     try {
         let driver: any;
         switch (config.source.database.type) {
@@ -31,26 +30,24 @@ export default async (client: TelegramClient) => {
 
             case "mongodb": {
                 const { MongoDriver } = await import("quickmongo"!);
-
                 driver = new MongoDriver(config.source.database.mongoURL);
                 await driver.connect();
+                break;
+            }
+
+            default: {
+                driver = undefined;
                 break;
             }
         };
 
         const db = new QuickDB({ driver });
         await db.init();
-        client.db = db;
-
-        // Anonymous chat variuables  
-        client.activeChats = client.db.table("activeChats");
-        client.chatMessages = client.db.table("chatMessages");
-        client.blocks = client.db.table("blocks");
-        client.users = client.db.table("users");
         post(
             `Database Is Successfully Activated!! (Type: ${config.source.database.type.toLocaleUpperCase()})`,
             "S"
         );
+        return db;
     } catch (e: any) {
         post(`Database Doesn't Work!!`.red, "E", "red", "red")
         error(e);

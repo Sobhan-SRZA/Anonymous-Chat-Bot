@@ -1,11 +1,11 @@
-import { QuickDB } from "quick.db";
 import Profile, { UserData } from "../types/UserProfile";
+import TelegramClient from "../classes/Client";
 import setUserData from "./setUserData";
-import client from "../..";
 
-export default async function setUserProfile(db: QuickDB, data: UserData, profile: Profile) {
+export default async function setUserProfile(client: TelegramClient, data: UserData, profile: Profile) {
   await setUserData(client, data);
-  await db.set(`user.${data.id}`, profile);
+  await client.db!.set(`user.${data.id}`, profile);
+
   return profile;
 }
 /**

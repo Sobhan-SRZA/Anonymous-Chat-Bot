@@ -15,7 +15,7 @@ const command: CommandType = {
     try {
       const
         userId = ctx.from?.id,
-        isHasActiveChat = await client.activeChats.has(`${userId}`),
+        isHasActiveChat = await client.activeChats!.has(`${userId}`),
         data: ExtraReplyMessage = {
           reply_markup: {
             inline_keyboard: [

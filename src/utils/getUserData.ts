@@ -2,7 +2,7 @@ import { UserData } from "../types/UserProfile";
 import TelegramClient from "../classes/Client";
 
 export default async function getUserData(client: TelegramClient, data: UserData) {
-  const allUsers = await client.users.all();
+  const allUsers = await client.users!.all();
   const findUser = allUsers.find(
     a =>
       a.value.id === data.id ||

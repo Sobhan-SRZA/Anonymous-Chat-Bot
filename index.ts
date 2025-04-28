@@ -31,6 +31,18 @@
   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+// Adding "toCapitalize" method to String class. | ts type is in ./src/types/string.d.ts
+String.prototype.toCapitalize = function (): string {
+    return String(this).toLowerCase().replace(/\b\w/g, char => char.toUpperCase())
+}
+
+// Adding "random" method to Array class. | ts type is in ./src/types/array.d.ts
+Array.prototype.random = function () {
+    const array = Array.from(this);
+    return array[Math.floor(Math.random() * array.length)]
+}
+
 // Add color to console messages.
 import "colors";
 

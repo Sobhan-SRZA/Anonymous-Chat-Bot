@@ -6,9 +6,9 @@ import checkUserIsBlock from "../../utils/checkUserIsBlock";
 import getUserProfile from "../../utils/getUserProfile";
 import markdownToHtml from "../../functions/markdownToHtml";
 import setUserProfile from "../../utils/setUserProfile";
+import setLastMessage from "../../utils/setLastMessage";
 import CommandType from "../../types/command";
 import error from "../../utils/error";
-import setLastMessage from "../../utils/setLastMessage";
 
 const command: CommandType = {
   data: {
@@ -103,7 +103,7 @@ const command: CommandType = {
           markdownToHtml(`سلام **${ctx.from.first_name}**!👋🏻\nبه ربات چت خصوصی خوش اومدی💋`),
           { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
         );
-        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, {});
+        await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, {});
       }
 
       const replyData: ExtraReplyMessage = {
