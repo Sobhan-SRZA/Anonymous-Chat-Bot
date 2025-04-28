@@ -3,7 +3,6 @@ import { CallbackQuery, Update, Message, InlineKeyboardButton, InlineKeyboardMar
 import { CtxCallbackQuery, MyContext } from "../types/MessageContext";
 import { startMessageButtons } from "../utils/startMessage";
 import { readFileSync } from "fs";
-import { Collection } from "../classes/Collection";
 import { Context } from "telegraf";
 import deleteClickedInlineKeyBoard from "../utils/deleteClickedInlineKeyBoard";
 import getUserIdByReferralCode from "../utils/getUserIdByReferralCode";
@@ -48,7 +47,7 @@ const event: EventType = {
                 ];
 
             // Set last activity
-            await updateUserLastSeen(client, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
+            await updateUserLastSeen(db, { id: userId, name: ctx.from?.first_name, username: ctx.from?.username?.toLowerCase() });
 
             switch (callback_data) {
 
@@ -73,7 +72,7 @@ const event: EventType = {
                             send_voice: true
                         };
 
-                        await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                     }
 
                     inline_keyboard.push([{ text: "تغییر جنسیت 🚻", callback_data: "change_gender" }]);
@@ -130,7 +129,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("نام نمایشی در چت خصوصی حذف شد.");
                         if (profile && profile.nickname) {
                             profile.nickname = undefined;
-                            await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -160,7 +159,19 @@ const event: EventType = {
                     ) as Update.Edited & Message.TextMessage;
 
                     // Set last message
-                    setLastMessage(ctx, msg);
+                    setLastMessage(ctx, msg, {
+                        to: undefined,
+                        text: msg.text,
+                        message_id: msg.message_id,
+                        chat: {
+                            id: msg.chat.id,
+                            type: msg.chat.type
+                        },
+                        from: {
+                            id: msg.from!.id,
+                            username: msg.from!.username
+                        }
+                    });
 
                     await ctx.scene.enter("change_nickname");
                     return;
@@ -173,7 +184,7 @@ const event: EventType = {
                         await ctx.answerCbQuery("پیام خوش آمد گویی حذف شد.");
                         if (profile && profile.welcome_message) {
                             profile.welcome_message = undefined;
-                            await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                            await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                         };
                     }
 
@@ -203,7 +214,19 @@ const event: EventType = {
                     ) as Update.Edited & Message.TextMessage;
 
                     // Set last message
-                    setLastMessage(ctx, msg);
+                    setLastMessage(ctx, msg, {
+                        to: undefined,
+                        text: msg.text,
+                        message_id: msg.message_id,
+                        chat: {
+                            id: msg.chat.id,
+                            type: msg.chat.type
+                        },
+                        from: {
+                            id: msg.from!.id,
+                            username: msg.from!.username
+                        }
+                    });
 
                     await ctx.scene.enter("change_welcome_message");
                     return;
@@ -315,7 +338,7 @@ const event: EventType = {
                     if (getActiveUsers.length > 0) {
                         const partnerId = getRandomActiveUser.id!;
                         if (await checkUserIsBlock(
-                            client,
+                            client.blocks!,
                             ctx,
                             userId,
                             +partnerId,
@@ -399,7 +422,19 @@ const event: EventType = {
                     ) as Update.Edited & Message.TextMessage;
 
                     // Set last message to answer  
-                    setLastMessage(ctx, msg);
+                    setLastMessage(ctx, msg, {
+                        to: undefined,
+                        text: msg.text,
+                        message_id: msg.message_id,
+                        chat: {
+                            id: msg.chat.id,
+                            type: msg.chat.type
+                        },
+                        from: {
+                            id: msg.from!.id,
+                            username: msg.from!.username
+                        }
+                    });
 
                     await ctx.scene.enter("found_user");
                     return;
@@ -422,7 +457,7 @@ const event: EventType = {
                 const gender = callback_data.replace("set_gender_", "") as UserGender;
                 try {
                     profile.gender = gender;
-                    await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                    await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 } catch {
                     return await ctx.answerCbQuery("مشکلی پیش آمد لطفا دوباره تلاش کنید :(");
                 }
@@ -449,7 +484,7 @@ const event: EventType = {
                     newButtons = await updateInlineKeyboard(callbackQuery, { text: action_text, callback_data: new_callback_data });
 
                 profile.permissions![permission_name] = action;
-                await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
+                await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, profile);
                 await ctx.answerCbQuery(action_text);
                 return await ctx.editMessageReplyMarkup({ inline_keyboard: newButtons });
             }
@@ -546,7 +581,7 @@ const event: EventType = {
             if (callback_data.startsWith("delete_message_")) {
                 const [forwardMessageId, userMessageId, partnerId] = callback_data.replace("delete_message_", "").split("-");
                 if (await checkUserIsBlock(
-                    client,
+                    client.blocks!,
                     ctx,
                     userId,
                     +partnerId,
@@ -574,7 +609,7 @@ const event: EventType = {
             if (callback_data.startsWith("edit_message_")) {
                 const [messageId, partnerId] = callback_data.replace("edit_message_", "").split("-");
                 if (await checkUserIsBlock(
-                    client,
+                    client.blocks!,
                     ctx,
                     userId,
                     +partnerId,
@@ -611,7 +646,7 @@ const event: EventType = {
             if (callback_data.startsWith("continue_chat_") || callback_data.startsWith("answer_")) {
                 const partnerId = (await getUserIdByReferralCode(db, callback_data.replace("continue_chat_", "").replace("answer_", "")))!;
                 if (await checkUserIsBlock(
-                    client,
+                    client.blocks!,
                     ctx,
                     userId,
                     +partnerId,

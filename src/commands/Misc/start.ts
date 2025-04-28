@@ -58,7 +58,7 @@ const command: CommandType = {
           );
 
         if (await checkUserIsBlock(
-          client,
+          client.blocks!,
           ctx,
           userId,
           referrerId,
@@ -103,7 +103,7 @@ const command: CommandType = {
           markdownToHtml(`سلام **${ctx.from.first_name}**!👋🏻\nبه ربات چت خصوصی خوش اومدی💋`),
           { parse_mode: "HTML", reply_parameters: { message_id: ctx.msgId } }
         );
-        await setUserProfile(client, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, {});
+        await setUserProfile(db, { id: userId, name: ctx.from.first_name, username: ctx.from.username?.toLowerCase() }, {});
       }
 
       const replyData: ExtraReplyMessage = {

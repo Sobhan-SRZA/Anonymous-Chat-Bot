@@ -1,8 +1,8 @@
 import { UserData } from "../types/UserProfile";
-import TelegramClient from "../classes/Client";
+import { QuickDB } from "quick.db";
 
-export default async function getUserData(client: TelegramClient, data: UserData) {
-  const allUsers = await client.users!.all();
+export default async function getUserData(users: QuickDB<UserData>, data: UserData) {
+  const allUsers = await users.all();
   const findUser = allUsers.find(
     a =>
       a.value.id === data.id ||

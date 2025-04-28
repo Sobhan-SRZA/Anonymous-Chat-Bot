@@ -22,7 +22,7 @@ const event: EventType = {
         return;
 
       if (await checkUserIsBlock(
-        client,
+        client.blocks!,
         ctx,
         userId,
         partnerId,

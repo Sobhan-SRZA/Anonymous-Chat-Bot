@@ -12,6 +12,7 @@ export default async (client: TelegramClient) => {
     client.on(event.name, event.run.bind(null, client));
     amount++;
   };
+  
   post(String(amount).cyan + " Events Is Loaded!!".green, "S");
 }
 /**

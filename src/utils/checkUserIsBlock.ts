@@ -1,9 +1,14 @@
 import { Context } from "telegraf";
-import TelegramClient from "../classes/Client";
+import { QuickDB } from "quick.db";
 import error from "./error";
 
 export default async function checkUserIsBlock(
-  client: TelegramClient,
+  blocks: QuickDB<{
+    id: number;
+    message_id: number;
+    messsage_text: string;
+    date: number;
+  }[]>,
   ctx: Context,
   userId: number,
   partnerId: number,
@@ -12,8 +17,8 @@ export default async function checkUserIsBlock(
 ): Promise<boolean | void> {
   try {
     const
-      getUserBlocks = await client.blocks!.get(`${userId}`),
-      getPartnerBlocks = await client.blocks!.get(`${partnerId}`);
+      getUserBlocks = await blocks.get(`${userId}`),
+      getPartnerBlocks = await blocks.get(`${partnerId}`);
 
     if (getUserBlocks && getUserBlocks.some(a => a.id === +partnerId)) {
       if (userBlockFunction)

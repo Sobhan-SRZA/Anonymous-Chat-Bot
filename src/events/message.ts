@@ -29,7 +29,7 @@ const event: EventType = {
 
         // Set last activity
         if (userProfile)
-          await updateUserLastSeen(client, { id: userId, name: message.from?.first_name, username: message.from?.username?.toLowerCase() });
+          await updateUserLastSeen(db, { id: userId, name: message.from?.first_name, username: message.from?.username?.toLowerCase() });
 
         const
           args = message.text.slice(1).trim().split(/ +/g),
