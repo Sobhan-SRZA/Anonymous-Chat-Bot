@@ -86,17 +86,11 @@ database_msql_user="your-mysql-user"
 database_msql_password="your-mysql-password"
 database_msql_database="your-mysql-database"
 
-# Support server invite link (optional)
-support_url="https://discord.gg/yourInvite"
-
 # Source owners (optional, comma-separated list of owner IDs)
 owners='["123456789", "987654321"]'
 
 # Anti crash controller (optional)
 anti_crash="true"
-
-# Send console errors to Discord (optional)
-logger="true"
 ```
 
 ### 4. Running the Bot
@@ -118,30 +112,27 @@ node dist/index.js
 
 ## Available Commands 📜
 
-| Command             | Description                                                                                                                                        | Emoji |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| `/help`             | Preview all bot avalible commands with description.                                                                                                | ⚒     |
-| `/link`             | Send or create a referral link of your anonymous chat invite.                                                                                      | 🔗    |
-| `/settings`         | Your settings in bot. (With using buttons you can customize your bot profile.)                                                                     | ⚙     |
-| `/start`            | Starts the bot. Without parameters, it shows usage instructions. With a referral parameter (`<referralCode>`), it connects you with a partner.     | 🚀    |
-| `/stop`             | Stops the current chat session and removes you from any waiting queues.                                                                            | ✋    |
+| Command     | Description                                                                                                                                    | Emoji |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `/help`     | Preview all bot avalible commands with description.                                                                                            | ⚒     |
+| `/link`     | Send or create a referral link of your anonymous chat invite.                                                                                  | 🔗     |
+| `/settings` | Your settings in bot. (With using buttons you can customize your bot profile.)                                                                 | ⚙     |
+| `/start`    | Starts the bot. Without parameters, it shows usage instructions. With a referral parameter (`<referralCode>`), it connects you with a partner. | 🚀     |
+| `/stop`     | Stops the current chat session and removes you from any waiting queues.                                                                        | ✋     |
 
 ---
 
 ## Packages & Versions 📦
 
-| Package              | Version    | Description                                                                                               | Emoji    |
-|----------------------|------------|-----------------------------------------------------------------------------------------------------------|----------|
-| **telegraf**         | ^4.16.3   | Telegram bot framework for interacting with the Telegram Bot API.                                         | 🤖       |
-| **dotenv**           | ^16.4.7   | Loads environment variables from a `.env` file.                                                           | 🌱       |
-| **quick.db**         | ^9.1.7    | A simple SQLite-based database using JsonDriver for storing bot data.                                     | 🗄️       |
-| **colors**           | ^1.4.0    | Adds color support to console messages, making debugging output more visually appealing.                  | 🎨       |
-| **write-file-atomic**| ^6.0.0    | Provides atomic writing to a file to ensure data integrity during writes.                                 | 💾       |
-| **@types/node**      | ^22.5.0   | TypeScript definitions for Node.js, providing type checking and IntelliSense for Node.js APIs.              | 📚       |
-| **ts-node**          | ^10.9.2   | Runs TypeScript files directly without needing to compile them first.                                     | ⚡       |
-| **tsup**             | ^8.2.4    | A bundler for TypeScript projects that provides fast and simple builds.                                   | 📦       |
-| **tslib**            | ^2.8.1    | Contains runtime helpers for TypeScript to reduce output size.                                            | 🔧       |
-| **typescript**       | ^5.5.4    | A superset of JavaScript that compiles to plain JavaScript and provides static type checking.               | 💻       |
+| Package               | Version | Description                                                                                    | Emoji |
+| --------------------- | ------- | ---------------------------------------------------------------------------------------------- | ----- |
+| **telegraf**          | ^4.16.3 | Telegram bot framework for interacting with the Telegram Bot API.                              | 🤖     |
+| **dotenv**            | ^16.4.7 | Loads environment variables from a `.env` file.                                                | 🌱     |
+| **quick.db**          | ^9.1.7  | A simple SQLite-based database using JsonDriver for storing bot data.                          | 🗄️     |
+| **colors**            | ^1.4.0  | Adds color support to console messages, making debugging output more visually appealing.       | 🎨     |
+| **write-file-atomic** | ^6.0.0  | Provides atomic writing to a file to ensure data integrity during writes.                      | 💾     |
+| **@types/node**       | ^22.5.0 | TypeScript definitions for Node.js, providing type checking and IntelliSense for Node.js APIs. | 📚     |
+| **typescript**        | ^5.5.4  | A superset of JavaScript that compiles to plain JavaScript and provides static type checking.  | 💻     |
 
 ---
 
@@ -155,7 +146,7 @@ This project is licensed under the [BSD 3-Clause License](./license).
 
 1. **Ensure your `.env` file is properly configured** with at least the `token` and `database_type` values.
 2. **Run `npm install`** to install all dependencies.
-3. **Start your bot** using `npm start` (or build and run the compiled JavaScript).
+3. **Start your bot** using `npm start` (or build and run the compiled JavaScript => `npm run start:build`).
 
 Enjoy using the Anonymous Chat Bot and feel free to extend its functionality as needed!
 
@@ -164,12 +155,17 @@ Enjoy using the Anonymous Chat Bot and feel free to extend its functionality as 
 ## Contact
 
  <div align="center">
-  <a href="http://sobhan.epizy.com" target="_blank">
+  <a href="https://srza.ir" target="_blank">
    <img align="left" src="https://github.com/user-attachments/assets/69b35053-17b1-48c6-a35b-4d3881a4dd2c" width=50%>
   </a>
   <a href="https://t.me/d_opa_mine" target="_blank">
-   <img alt="Telegram"
-    src="https://img.shields.io/static/v1?message=Telegram&logo=telegram&label=&color=229ED9&logoColor=white&labelColor=&style=flat"
+   <img alt="Telegram Channel"
+    src="https://img.shields.io/static/v1?message=Telegram Channel&logo=telegram&label=&color=229ED9&logoColor=white&labelColor=&style=flat"
+    height="30" />
+  </a>
+  <a href="https://t.me/Sobhan_SRZA" target="_blank">
+   <img alt="Telegram Account"
+    src="https://img.shields.io/static/v1?message=Telegram Account&logo=telegram&label=&color=229ED9&logoColor=white&labelColor=&style=flat"
     height="30" />
   </a>
   <a href="https://www.instagram.com/mr.sinre?igsh=cWk1aHdhaGRnOGg%3D&utm_source=qr" target="_blank">

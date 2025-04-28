@@ -10,11 +10,7 @@ interface ErrorType {
 
 export default function error(error: ErrorType) {
   try {
-    if (false) { }
-
-    else
-      console.log(error);
-
+    console.log(error);
   } catch (e) {
     post("Error logger to discord webhook have bug!!", "E", "red", "red");
     console.log(e);

@@ -1,7 +1,6 @@
 const config = {
     source: {
         anti_crash: process.env.anti_crash === "true" ? true : false || false, // Anticrash on or off
-        logger: process.env.logger === "true" ? true : false || false, // Webhook logger on or off
         database: {
             type: process.env.database_type || "", // Choose one type for save users and guilds data. Types: "mysql" | "sql" | "mongodb" | "json"
             mongoURL: process.env.database_mongoURL || "", // If you choose "mongodb" type place your mongo url.
@@ -16,7 +15,6 @@ const config = {
     bot: {
         token: process.env.token || "", // Bot token.
         support: {
-            invite: process.env.support_url || "https://discord.gg/AfkuXgCKAQ", // Support server invite link.
             owners: JSON.parse(process.env.owners || "[]") || [] // Source owners.
         }
     }
