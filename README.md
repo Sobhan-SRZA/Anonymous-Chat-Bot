@@ -130,7 +130,6 @@ node dist/index.js
 | **dotenv**            | ^16.4.7 | Loads environment variables from a `.env` file.                                                | 🌱     |
 | **quick.db**          | ^9.1.7  | A simple SQLite-based database using JsonDriver for storing bot data.                          | 🗄️     |
 | **colors**            | ^1.4.0  | Adds color support to console messages, making debugging output more visually appealing.       | 🎨     |
-| **write-file-atomic** | ^6.0.0  | Provides atomic writing to a file to ensure data integrity during writes.                      | 💾     |
 | **@types/node**       | ^22.5.0 | TypeScript definitions for Node.js, providing type checking and IntelliSense for Node.js APIs. | 📚     |
 | **typescript**        | ^5.5.4  | A superset of JavaScript that compiles to plain JavaScript and provides static type checking.  | 💻     |
 
